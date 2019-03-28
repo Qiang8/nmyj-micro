@@ -1,5 +1,5 @@
 
-micro base jar还未发布到公司私服，需先下载工程，本地install。
+micro base jar需先下载工程，本地install。
 
 maven profile选local
 
