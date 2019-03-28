@@ -1,5 +1,5 @@
 
-micro base jar需先下载工程，本地install。
+需先下载工程，本地install micro base jar。
 
 maven profile选local
 
