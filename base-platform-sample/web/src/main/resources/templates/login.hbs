@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <meta charset="utf-8"/>
+    <title>Login Page - Ace Admin</title>
+
+    <meta name="description" content="User login page"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+
+    <!-- bootstrap & fontawesome -->
+    <link rel="stylesheet" href="js/ace/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="js/components/font-awesome/css/font-awesome.min.css" />
+
+    <!-- text fonts -->
+    <link rel="stylesheet" href="js/ace/css/ace-fonts.min.css" />
+
+    <!-- ace styles -->
+    <link rel="stylesheet" href="js/ace/css/ace.min.css" class="ace-main-stylesheet" id="main-ace-style" />
+
+   <!--[if lte IE 9]>
+    <link rel="stylesheet" href="js/ace/css/ace-part2.min.css" class="ace-main-stylesheet" />
+    <![endif]-->
+    <link rel="stylesheet" href="js/ace/css/ace-skins.min.css" />
+    <link rel="stylesheet" href="js/ace/css/ace-rtl.min.css" />
+
+    <!--[if lte IE 9]>
+    <link rel="stylesheet" href="js/ace/css/ace-ie.min.css" />
+    <![endif]-->
+
+    <!-- ace settings handler -->
+    <script src="js/ace/js/ace-extra.min.js"></script>
+
+    <!-- HTML5shiv and Respond.js for IE8 to support HTML5 elements and media queries -->
+    <!--[if lte IE 8]>
+    <script src="js/components/html5shiv/dist/html5shiv.min.js"></script>
+    <script src="js/components/respond/dest/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body class="login-layout light-login">
+<div class="main-container">
+    <div class="main-content">
+        <div class="row">
+            <div class="col-sm-10 col-sm-offset-1">
+                <div class="login-container">
+                    <div class="center">
+                        <h1>
+                            <i class="ace-icon fa fa-leaf green"></i>
+                            <span class="red">Ace</span>
+                            <span class="white" id="id-text2">{{applictionTitle}}</span>
+                        </h1>
+                        <h4 class="blue" id="id-company-text">&copy; 太极</h4>
+                    </div>
+
+                    <div class="space-6"></div>
+
+                    <div class="position-relative">
+                        <div id="login-box" class="login-box visible widget-box no-border">
+                            <div class="widget-body">
+                                <div class="widget-main">
+                                    <h4 class="header blue lighter bigger">
+                                        <i class="ace-icon fa fa-coffee green"></i>
+                                        登录
+                                    </h4>
+
+                                    <div class="space-6"></div>
+
+                                    <form action="./login.action" method="post" id="userLoginForm">
+                                        <fieldset>
+                                            <label class="block clearfix">
+                                                <span class="block input-icon input-icon-right">
+                                                    <input type="text" id="username" name="j_username"
+                                                           class="form-control login_form_input_validate"
+                                                           placeholder="用户名" value="1234"/>
+                                                    <i class="ace-icon fa fa-user"></i>
+                                                </span>
+                                            </label>
+
+                                            <label class="block clearfix">
+                                                <span class="block input-icon input-icon-right">
+                                                    <input type="password" id="password" name="j_password"
+                                                           class="form-control login_form_input_validate"
+                                                           placeholder="密码" value="1234"/>
+                                                    <i class="ace-icon fa fa-lock"></i>
+                                                </span>
+                                            </label>
+
+                                            <div class="space"></div>
+
+                                            <div class="clearfix">
+                                                <button type="button" id="userLoginBtn"
+                                                        class="width-35 pull-right btn btn-sm btn-primary">
+                                                    <i class="ace-icon fa fa-key"></i>
+                                                    <span class="bigger-110">登 录</span>
+                                                </button>
+                                            </div>
+
+                                            <div class="space-4"></div>
+                                        </fieldset>
+                                    </form>
+                                </div><!-- /.widget-main -->
+                            </div><!-- /.widget-body -->
+                        </div><!-- /.login-box -->
+
+                    </div><!-- /.position-relative -->
+                </div>
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.main-content -->
+</div><!-- /.main-container -->
+
+<!-- basic scripts -->
+
+<!-- basic scripts -->
+
+<!--[if !IE]> -->
+<script src="js/components/jquery/dist/jquery.js"></script>
+
+<!-- <![endif]-->
+
+<script src="js/components/jquery-validation/dist/jquery.validate.min.js" type="text/javascript"
+        charset="utf-8"></script>
+<script src="js/components/jquery-validation/dist/additional-methods.min.js" type="text/javascript"
+        charset="utf-8"></script>
+
+
+<!--[if IE]>
+<script src="js/components/jquery.1x/dist/jquery.js"></script>
+
+<![endif]-->
+<script type="text/javascript">
+    if('ontouchstart' in document.documentElement) document.write("<script src='js/components/_mod/jquery.mobile.custom/jquery.mobile.custom.js'>"+"<"+"/script>");
+</script>
+
+<script src="js/global.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var $userLoginForm = $('#userLoginForm');
+        var $userLoginBtn  = $('#userLoginBtn');
+
+        $(document).keydown(function (event) {
+            if (event.keyCode == 13) {
+                if ($userLoginForm.validate().form()) {
+                    $userLoginForm.submit();
+                }
+                return false;
+            }
+        });
+
+        //登录表单校验
+        $userLoginForm.validate({
+            errorElement: 'span',
+            errorClass  : 'help-block red',
+            focusInvalid: false,
+            rules       : {
+                j_username: {
+                    required: true
+                },
+                j_password: {
+                    required: true
+                }
+            },
+            messages    : {
+                j_username: {
+                    required: "用户名必须填写."
+                },
+                j_password: {
+                    required: "密码必须填写."
+                }
+            },
+            highlight   : function (element) {
+                $(element).closest('.login_form_input_validate').addClass('has-error');
+            },
+
+            success: function (label) {
+                label.closest('.login_form_input_validate').removeClass('has-error');
+                label.remove();
+            },
+
+            errorPlacement: function (error, element) {
+                element.parents('label').append(error);
+            },
+
+            submitHandler: function (form) {
+                form.submit();
+            }
+        });
+
+        $userLoginBtn.click(function () {
+            if ($userLoginForm.validate().form()) {
+                $userLoginForm.submit();
+            }
+        });
+    });
+
+</script>
+
+</body>
+</html>

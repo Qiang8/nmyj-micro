@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>websocket </title>
+
+    <script src="js/jquery.js"></script>
+    <script src="js/sockjs.js"></script>
+    <script src="js/stomp.js"></script>
+    <script src="js/jquery.js"></script>
+    <script src="js/index.js"></script>
+    <script>
+        $(document).ready(function () {
+            App.initSystem();
+        })
+    </script>
+</head>
+<body>
+<div>
+    <div>
+        <label>User</label><input id="user" type="text" value="clientId"/><br/>
+        <label>toUser</label><input type="text" id="toUser"/><br/>
+        <button id="connect">Connect</button>
+        <button id="disconnect" disabled="disabled">Disconnect</button>
+    </div>
+
+    <div id="contentDiv">
+
+        <button id="send">Send</button><br/>
+
+        <br/>发送服务器消息:<br/>
+        <textarea id="sendMessage" style="width: 400px;height: 100px;"></textarea>
+
+        <br/>接收服务器消息systemDate:<br/>
+        <textarea id="receiveMessageSystemDate" style="width: 400px;height: 20px;"></textarea>
+
+        <br/>接收服务器消息broadcast:<br/>
+        <textarea id="receiveMessageBroadcast" style="width: 400px;height: 50px;"></textarea>
+
+        <br/>接收服务器消息tome:<br/>
+        <textarea id="receiveMessageToMe" style="width: 400px;height: 50px;"></textarea>
+    </div>
+</div>
+
+</body>
+</html>

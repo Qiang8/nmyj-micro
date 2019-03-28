@@ -1,0 +1,1971 @@
+swagger: '2.0'
+info:
+  description: >-
+    舆情上报、舆情研判、舆情审批、重点舆情专题管理、任务部署等.
+  version: 1.0.0
+  title: report舆情上报研判
+host: 127.0.0.1:8000
+basePath: /cdp-report/v1
+tags:
+  - name: 舆情上报report
+    description: 舆情上报、信息管理
+  - name: 舆情统计stat
+    description: 舆情统计
+  - name: 舆情研判judge
+    description: 信息研判
+  - name: 电子取证evidence
+    description: 电子取证
+  - name: 舆情审批approval
+    description: 舆情审批
+  - name: 专题管理topic
+    description: 重点舆情专题管理
+  - name: 任务管理task
+    description: 任务部署、接收与管理
+  - name: 流程跟踪flow
+    description: 流程跟踪查看
+schemes:
+  - http
+paths:
+####舆情上报####
+ /reports/:
+   post:
+     tags:
+       - 舆情上报report
+     summary: '舆情信息填报，默认为0未上报状态. 盟市舆情上报系统舆情填报时reportWay前端赋值0，自治区舆情录入模块填报时reportWay前端赋值1'
+     operationId: addConsInfo
+     parameters:
+       - name: consInfo
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/ConsInfoAll'
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               $ref: '#/definitions/ConsInfo'
+ /reports/{id}:
+   put:
+     tags:
+       - 舆情上报report
+     summary: '修改舆情信息'
+     operationId: updateConsInfo
+     parameters:
+       - $ref: '#/parameters/id-p'
+       - name: consInfo
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/ConsInfoAll'
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               $ref: '#/definitions/ConsInfo'
+   get:
+     tags:
+       - 舆情上报report
+     summary: '获取单条舆情信息'
+     operationId: findConsInfoById
+     parameters:
+       - $ref: '#/parameters/id-p'
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               $ref: '#/definitions/ConsInfo'
+   delete:
+     tags:
+       - 舆情上报report
+     summary: '删除舆情信息'
+     operationId: deleteConsInfo
+     parameters:
+       - $ref: '#/parameters/id-p'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+ /reports/send:
+   post:
+     tags:
+       - 舆情上报report
+     summary: '舆情信息上报，更新ConsInfo表的status和receiveOrgCode字段，并且将last_deal_user更新为当前登录用户名称、last_deal_time更新为系统当前操作时间'
+     operationId: sendInfo
+     parameters:
+       - name: infoId
+         in: query
+         required: true
+         description: 舆情ID
+         type: string
+       - name: receiveOrgCode
+         in: query
+         type: string
+         description: 接收单位CODE
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+ /reports/search:
+    post:
+        tags:
+          - 舆情上报report
+        summary: '根据条件查询舆情信息列表-分页（盟市）'
+        operationId: findConsInfos
+        parameters:
+          - name: consInfoVO
+            in: body
+            required: true
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: 舆情标题
+                reportTimeStart:
+                  type: string
+                  format: 'date-time'
+                  description: 上报开始时间
+                reportTimeEnd:
+                  type: string
+                  format: 'date-time'
+                  description: 上报结束时间
+                createTimeStart:
+                  type: string
+                  format: 'date-time'
+                  description: 创建开始时间
+                createTimeEnd:
+                  type: string
+                  format: 'date-time'
+                  description: 创建结束时间
+                statuses:
+                  type: array
+                  description: 舆情状态数组：a.待上报标签查询状态为【0】；b.已上报标签查询状态为【1-8】。默认值由前端传入参数。
+                  items:
+                    type: string
+                orgId:
+                  type: string
+                  description: 创建部门ID，为空时默认为登录用户所属单位ID
+                page:
+                  type: integer
+                size:
+                  type: integer
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/ConsInfoList'
+ /reports/rec/search:
+    post:
+        tags:
+          - 舆情上报report
+        summary: '根据条件查询舆情信息列表-分页（自治区）'
+        operationId: findConsInfoVos
+        parameters:
+          - name: consInfoVO
+            in: body
+            required: true
+            schema:
+              type: object
+              properties:
+                statuses:
+                  type: array
+                  description: 舆情状态数组a.待处理默认查询状态为【1-3】;b.已处理默认查询状态为【4、6、7】;c.已退回默认查询状态为【5】。默认值由前端传入参数。
+                  items:
+                    type: string
+                title:
+                  type: string
+                  description: 舆情标题
+                reportTimeStart:
+                  type: string
+                  format: 'date-time'
+                  description: 上报开始时间
+                reportTimeEnd:
+                  type: string
+                  format: 'date-time'
+                  description: 上报结束时间
+                reportWay:
+                  type: array
+                  description: 上报渠道数组：0互联网舆情上报  1内部录入 2舆情发现系统  3舆情监测分析 4态势感知系统
+                  items:
+                    type: string
+                page:
+                  type: integer
+                size:
+                  type: integer
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/ConsInfoVoList'
+ /reports/rec/searchAll:
+    post:
+        tags:
+          - 舆情上报report
+        summary: '根据条件查询舆情信息列表-不分页'
+        operationId: findConsInfosAll
+        parameters:
+          - name: consInfoVO
+            in: body
+            required: true
+            schema:
+              type: object
+              properties:
+                statuses:
+                  type: array
+                  description: 舆情状态数组:0未上报 1已上报 2已研判 3短信上报 4已审批通过 5已退回 6处置中 7已完成 8已忽略。默认值由前端传入参数。
+                  items:
+                    type: string
+                title:
+                  type: string
+                  description: 舆情标题
+                reportTimeStart:
+                  type: string
+                  format: 'date-time'
+                  description: 上报开始时间
+                reportTimeEnd:
+                  type: string
+                  format: 'date-time'
+                  description: 上报结束时间
+        responses:
+          200:
+            description: OK
+            schema:
+              type: object
+              allOf:
+                - $ref: '#/definitions/ReturnResult'
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '#/definitions/ConsInfo'
+ /reports/rec/updateStatus:
+    post:
+        tags:
+          - 舆情上报report
+        summary: '当舆情进行研判、忽略、短信发送、审批通过、审批退回、生成调控单、舆情完成（结束）等操作时，通过前台传参，后台将CR_CONS_INFO表中的status更新为对应的舆情状态，并且将last_deal_user更新为当前登录用户名称、last_deal_time更新为系统当前操作时间'
+        operationId: updateConsStatus
+        parameters:
+          - name: infoId
+            in: query
+            description: 舆情ID
+            type: string
+          - name: status
+            in: query
+            description: 舆情信息状态：2已研判 3短信上报 4已审批通过 5已退回 6处置中 7已完成 8已忽略
+            type: string
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/ReturnResult'
+ /reports/list:
+   post:
+     tags:
+       - 舆情上报report
+     summary: '根据舆情ID数组查询舆情信息列表-不分页（交接班使用）'
+     operationId: findConsInfosByIds
+     parameters:
+        - name: infoIds
+          in: body
+          required: true
+          description: 舆情ID数组
+          schema:
+            type: array
+            items:
+              type: string
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               type: array
+               items:
+                 $ref: '#/definitions/ConsInfo'
+ /reportAnalyzes/:
+   post:
+     tags:
+       - 舆情上报report
+     summary: '通过链接URL解析获取舆情相应的标题和内容信息'
+     operationId: getAnalyzeInfo
+     parameters:
+       - name: infoUrl
+         in: body
+         required: true
+         schema:
+           type: string
+           description: 舆情链接URL
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+                $ref: '#/definitions/AnalyzeInfo'
+ /reports/searchTopic:
+   post:
+     tags:
+       - 舆情上报report
+     summary: '根据重点专题ID查询舆情信息列表-分页（重点专题使用）'
+     operationId: findTopicConsInfos
+     parameters:
+       - name: topicVO
+         in: body
+         required: true
+         schema:
+           type: object
+           properties:
+             topicId:
+               type: string
+             page:
+               type: integer
+             size:
+               type: integer
+     responses:
+       200:
+         description: OK
+         schema:
+           $ref: '#/definitions/ConsInfoList'
+####舆情统计####
+ /stats/statOwnReports:
+    post:
+      tags:
+        - 舆情统计stat
+      summary: '统计本单位上报舆情数量（cr_cons_info表的create_org_id=登录人所属部门&status=【1-8】的记录）'
+      operationId: statOwnReports
+      parameters:
+         - name: timeCycle
+           in: body
+           required: true
+           schema:
+             type: string
+             description: 统计时间周期：1今日 2本周 3本月 4本年
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                $ref: '#/definitions/reportStatVo'
+ /stats/statAllReports:
+    post:
+      tags:
+        - 舆情统计stat
+      summary: '统计所有接收的舆情数量（已接收表示cr_cons_info表的status=【1-8】；已处理表示cr_cons_info表的status=【4-8】；未处理表示cr_cons_info表的status=【1-3】）'
+      operationId: statAllReports
+      parameters:
+         - name: statFlag
+           in: body
+           required: true
+           schema:
+             type: string
+             description: 统计标志位：1今日已接收 2今日已处理 3今日未处理 4至今累计接收
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                $ref: '#/definitions/reportStatVo'
+ /stats/statTasks:
+    post:
+      tags:
+        - 舆情统计stat
+      summary: '统计下发给本单位的任务数量(本年度)（cj_task_exeorg表中的org_id=登录人所属部门）'
+      operationId: statTaskRecs
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                $ref: '#/definitions/taskStatVo'
+ /stats/statSources:
+    post:
+      tags:
+        - 舆情统计stat
+      summary: '舆情信息上报来源统计（本年度）（cr_cons_info表的source_type_id为来源类型ID(字典表),&status=【1-8】的记录）'
+      operationId: statConsSources
+      parameters:
+         - name: isOwnOrg
+           in: body
+           required: true
+           schema:
+             type: string
+             description: 是否统计本单位：0本单位 1全部
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                $ref: '#/definitions/consSourceStatVo'
+ /stats/statTypes:
+    get:
+      tags:
+        - 舆情统计stat
+      summary: '舆情信息按新增舆情和重点舆情分类进行统计（近七日）（cr_cons_info表的status=【1-7】，cj_cons_judge表的tag_type舆情标签类型：0新增舆情 1重点舆情）'
+      operationId: statConsTypes
+      parameters:
+         - name: isOwnOrg
+           in: query
+           required: true
+           type: string
+           description: 是否统计本单位：0本单位 1全部
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                $ref: '#/definitions/consTypeStatVo'
+ /stats/statWays:
+    post:
+      tags:
+        - 舆情统计stat
+      summary: '统计各渠道上报舆情数量（本年度）（cr_cons_info表的status=【1-8】，createOrgId对应的组织CODE分类）'
+      operationId: statReportWays
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                $ref: '#/definitions/reportWayStatVo'
+ /stats/statValids:
+    post:
+      tags:
+        - 舆情统计stat
+      summary: '统计舆情报送有效率（本年度）（cr_cons_info表的status,总数【1-8】，有效率【1/2/3/4/6/7】）'
+      operationId: statReportValid
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                $ref: '#/definitions/reportValidStatVo'
+ /stats/reports:
+    get:
+      tags:
+        - 舆情统计stat
+      summary: '统计本单位上报舆情总数（用于盟市上报管理模块TAB数量显示，同/reports/search 接口的全集）'
+      operationId: statReports
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/reportTabVo'
+ /stats/reportRecs:
+    get:
+      tags:
+        - 舆情统计stat
+      summary: '统计接收处理舆情总数（用于自治区舆情研判模块TAB数量显示， 同/reports/rec/search 接口的全集）'
+      operationId: statReportRecs
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/reportRecTabVo'
+ /stats/approvals:
+    get:
+      tags:
+        - 舆情统计stat
+      summary: '统计审批舆情总数（用于自治区舆情审批模块TAB数量显示，  同/approvals/search 接口的全集）'
+      operationId: statApprovals
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/approvalTabVo'
+ /stats/taskRecs:
+    get:
+      tags:
+        - 舆情统计stat
+      summary: '统计本单位接收任务总数（用于盟市接收任务模块TAB数量显示，同/taskRecs/search 接口的全集）'
+      operationId: statTabTaskRecs
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/taskRecTabVo'
+####舆情研判####
+ /judges/:
+   post:
+     tags:
+       - 舆情研判judge
+     summary: '新增舆情研判意见'
+     operationId: addConsJudge
+     parameters:
+       - name: consJudge
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/ConsJudgeVo'
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               $ref: '#/definitions/ConsJudgeVo'
+ /judges/{id}:
+   put:
+     tags:
+       - 舆情研判judge
+     summary: '修改舆情研判意见'
+     operationId: updateConsJudge
+     parameters:
+       - $ref: '#/parameters/id-p'
+       - name: consJudge
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/ConsJudgeVo'
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               $ref: '#/definitions/ConsJudgeVo'
+
+   get:
+     tags:
+       - 舆情研判judge
+     summary: '获取单条舆情研判信息'
+     operationId: findConsJudgeById
+     parameters:
+       - $ref: '#/parameters/id-p'
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               $ref: '#/definitions/ConsJudgeVo'
+ /consJudges/:
+   get:
+     tags:
+       - 舆情研判judge
+     summary: '通过舆情ID获取该条舆情研判信息'
+     operationId: getConsJudge
+     parameters:
+       - name: infoId
+         in: query
+         required: true
+         type: string
+         description: 舆情ID
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+                $ref: '#/definitions/ConsJudgeVo'
+####电子取证####
+ /evidences/:
+   post:
+     tags:
+       - 电子取证evidence
+     summary: '舆情电子证据取证'
+     operationId: addConsEvidence
+     parameters:
+       - name: consEvidence
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/ConsEvidence'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+ /evidences/{id}:
+   get:
+     tags:
+       - 电子取证evidence
+     summary: '获取单条舆情电子取证信息'
+     operationId: findConsEvidenceById
+     parameters:
+       - $ref: '#/parameters/id-p'
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               $ref: '#/definitions/ConsEvidence'
+ /consEvidences/:
+   get:
+     tags:
+       - 电子取证evidence
+     summary: '通过舆情ID获取该条舆情电子取证信息列表信息'
+     operationId: getConsEvidences
+     parameters:
+       - name: infoId
+         in: query
+         required: true
+         type: string
+         description: 舆情ID
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               type: array
+               items:
+                 $ref: '#/definitions/ConsEvidence'
+                 description: 电子取证信息对象数组
+####舆情审批####
+ /approvals/:
+   post:
+     tags:
+       - 舆情审批approval
+     summary: '申请舆情审批信息'
+     operationId: addConsApproval
+     parameters:
+       - name: consApproval
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/ConsApproval'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+ /approvals/{id}:
+   put:
+     tags:
+       - 舆情审批approval
+     summary: '提交舆情审批意见'
+     operationId: updateConsApproval
+     parameters:
+       - $ref: '#/parameters/id-p'
+       - name: consApproval
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/ConsApproval'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+   get:
+     tags:
+       - 舆情审批approval
+     summary: '获取单条舆情审批信息'
+     operationId: findConsApprovalById
+     parameters:
+       - $ref: '#/parameters/id-p'
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               $ref: '#/definitions/ConsApproval'
+ /approvals/search:
+    post:
+        tags:
+          - 舆情审批approval
+        summary: '根据条件查询舆情信息列表-分页（与审批人相关的）'
+        operationId: findApprovalConsInfoVos
+        parameters:
+          - name: consInfoVO
+            in: body
+            required: true
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: 舆情标题
+                tagFlag:
+                  type: string
+                  description: 查询标签标志：00个人待审批 列表，01个人已审批列表。（后台操作：tagFlag为00，则CJ_CONS_APPROVAL中approver_id为当前登录用户ID，且approval_result为空；tagFlag为01，则CJ_CONS_APPROVAL中approver_id为当前登录用户ID，且approval_result为非空；获取INFO_ID集合后再根据查询条件查询CR_CONS_INFO和CJ_CONS_EVIDENCE表中对应的信息返回）
+                page:
+                  type: integer
+                size:
+                  type: integer
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/ConsApprVoList'
+ /consApprovals/:
+   post:
+     tags:
+       - 舆情审批approval
+     summary: '通过舆情ID获取该条舆情审批列表信息'
+     operationId: getApprovals
+     parameters:
+       - name: infoId
+         in: query
+         required: true
+         type: string
+         description: 舆情ID
+       - name: approvalNode
+         in: query
+         required: true
+         type: string
+         description: 审批节点：监管中心/带班处长center_audit 、办领导leader_audit
+       - name: approvalResult
+         in: query
+         type: string
+         description: 审批结果：0同意 1退回（查看审批意见时，前端不需传值；查看退回原因时，前端传入1）
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               type: array
+               items:
+                 $ref: '#/definitions/ConsApproval'
+                 description: 审批信息对象数组
+ /preCmds/:
+   get:
+     tags:
+       - 舆情审批approval
+     summary: '通过舆情ID获取调控单的各种初始化数据信息（后台查询研判意见judgeOpinion从cj_cons_judge表里的opinion字段获取，审批意见centerOpinion、leaderOpinion从cj_cons_approval表里的approval_opinion字段中获取，approval_node为0的为centerOpinion，node为1的为leaderOpinion）'
+     operationId: getPreCmdInfo
+     parameters:
+       - name: infoId
+         in: query
+         required: true
+         type: string
+         description: 舆情信息ID
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+                $ref: '#/definitions/PreCommandVo'
+ /consDailys/:
+    post:
+        tags:
+          - 舆情审批approval
+        summary: '通过条件查询审批建议上日报的舆情信息列表信息-分页(后台通过前端传入的时间段与cr_cons_info表中的report_time匹配，并且查询cj_common_advice表中common_advice_id上日报字典项的相关舆情信息，有可能存在一个舆情ID两条common_advice_id的情况，舆情ID注意排重)'
+        operationId: findConsDailys
+        parameters:
+          - name: approvalVO
+            in: body
+            required: true
+            schema:
+              type: object
+              properties:
+                startTime:
+                  type: string
+                  format: 'date-time'
+                  description: 开始时间
+                endTime:
+                  type: string
+                  format: 'date-time'
+                  description: 结束时间
+                page:
+                  type: integer
+                size:
+                  type: integer
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/ConsInfoList'
+####重点专题管理####
+ /topics/:
+   post:
+     tags:
+       - 专题管理topic
+     summary: '新增专题信息'
+     operationId: addTopic
+     parameters:
+       - name: topic
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/Topic'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+ /topics/{id}:
+   put:
+     tags:
+       - 专题管理topic
+     summary: '修改专题信息'
+     operationId: updateTopic
+     parameters:
+       - $ref: '#/parameters/id-p'
+       - name: topic
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/Topic'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+   get:
+     tags:
+       - 专题管理topic
+     summary: '获取单条专题信息'
+     operationId: findTopicById
+     parameters:
+       - $ref: '#/parameters/id-p'
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               $ref: '#/definitions/Topic'
+   delete:
+     tags:
+       - 专题管理topic
+     summary: '删除专题信息'
+     operationId: deleteTopic
+     parameters:
+       - $ref: '#/parameters/id-p'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+ /topics/searchAll:
+   get:
+     tags:
+       - 专题管理topic
+     summary: '根据条件查询专题信息列表-不分页'
+     operationId: findTopicsAll
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               type: array
+               items:
+                 $ref: '#/definitions/Topic'
+ /topics/match:
+   get:
+     tags:
+       - 专题管理topic
+     summary: '根据专题关键字与舆情标题和内容进行匹配，查询匹配上的专题信息列表'
+     operationId: findMatchTopics
+     parameters:
+       - name: infoId
+         in: query
+         required: true
+         type: string
+         description: 舆情信息ID
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               type: array
+               items:
+                 $ref: '#/definitions/Topic'
+ /topicKeywords/:
+   post:
+     tags:
+       - 专题管理topic
+     summary: '保存专题关键字信息'
+     operationId: addTopicKeyword
+     parameters:
+       - name: topicKeyword
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/TopicKeyword'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+ /topicKeywords/{id}:
+   put:
+     tags:
+       - 专题管理topic
+     summary: '修改专题关键字信息'
+     operationId: updateTopicKeyword
+     parameters:
+       - $ref: '#/parameters/id-p'
+       - name: topicKeyword
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/TopicKeyword'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+   get:
+     tags:
+       - 专题管理topic
+     summary: '获取单条专题关键字信息'
+     operationId: findTopicKeywordById
+     parameters:
+       - $ref: '#/parameters/id-p'
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               $ref: '#/definitions/TopicKeyword'
+   delete:
+     tags:
+       - 专题管理topic
+     summary: '删除专题关键字信息'
+     operationId: deleteTopicKeyword
+     parameters:
+       - $ref: '#/parameters/id-p'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+ /topicKeywords/searchAll:
+   get:
+     tags:
+       - 专题管理topic
+     summary: '根据条件查询专题关键字列表-不分页'
+     operationId: findTopicKeywordsAll
+     parameters:
+       - name: topicId
+         in: query
+         description: 专题信息ID
+         type: string
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               type: array
+               items:
+                 $ref: '#/definitions/TopicKeyword'
+####任务部署####
+ /tasks/:
+   post:
+     tags:
+       - 任务管理task
+     summary: '新增任务信息'
+     operationId: addTaskVo
+     parameters:
+       - name: taskVo
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/TaskVo'
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               $ref: '#/definitions/TaskVo'
+ /tasks/{id}:
+   put:
+     tags:
+       - 任务管理task
+     summary: '修改任务信息'
+     operationId: updateTaskVo
+     parameters:
+       - $ref: '#/parameters/id-p'
+       - name: taskVo
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/TaskVo'
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               $ref: '#/definitions/TaskVo'
+   get:
+     tags:
+       - 任务管理task
+     summary: '获取单条任务信息'
+     operationId: findTaskVoById
+     parameters:
+       - $ref: '#/parameters/id-p'
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               $ref: '#/definitions/TaskVo'
+   delete:
+     tags:
+       - 任务管理task
+     summary: '删除任务信息'
+     operationId: deleteTask
+     parameters:
+       - $ref: '#/parameters/id-p'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+ /tasks/search:
+    post:
+        tags:
+          - 任务管理task
+        summary: '根据条件查询任务信息列表-分页'
+        operationId: findTasks
+        parameters:
+          - name: taskVO
+            in: body
+            required: true
+            schema:
+              type: object
+              properties:
+                infoTitle:
+                  type: string
+                  description: 舆情标题
+                title:
+                  type: string
+                  description: 任务标题
+                createTimeStart:
+                  type: string
+                  format: 'date-time'
+                  description: 创建开始时间
+                createTimeEnd:
+                  type: string
+                  format: 'date-time'
+                  description: 创建结束时间
+                status:
+                  type: string
+                  description: 任务状态：0未下发 1已下发
+                orgId:
+                  type: string
+                  description: 创建部门ID，为空时默认为登录用户所属单位ID
+                page:
+                  type: integer
+                size:
+                  type: integer
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/TaskList'
+ /tasks/send:
+   post:
+     tags:
+       - 任务管理task
+     summary: '任务信息下发，后台更新Task表的status和sendTime字段，并且将接收部门的人员的相关初始数据入库TaskReceive表'
+     operationId: sendTask
+     parameters:
+       - name: taskId
+         in: query
+         description: 任务ID
+         type: string
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+ /taskRecs/viewStatus:
+   get:
+     tags:
+       - 任务管理task
+     summary: '根据任务ID查询接收状态信息列表(获取所有接收部门的接收状态及部门下仅已接收人员的列表)'
+     operationId: findTaskRecStatus
+     parameters:
+       - name: taskId
+         in: query
+         description: 任务ID
+         type: string
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               type: array
+               items:
+                 $ref: '#/definitions/TaskRecVo'
+ /taskRecs/search:
+    post:
+        tags:
+          - 任务管理task
+        summary: '根据条件查询接收任务信息列表-分页'
+        operationId: findRecTasks
+        parameters:
+          - name: taskVo
+            in: body
+            required: true
+            schema:
+              type: object
+              properties:
+                infoTitle:
+                  type: string
+                  description: 舆情标题
+                title:
+                  type: string
+                  description: 任务标题
+                sendTimeStart:
+                  type: string
+                  format: 'date-time'
+                  description: 发送开始时间
+                sendTimeEnd:
+                  type: string
+                  format: 'date-time'
+                  description: 发送结束时间
+                readFlag:
+                  type: string
+                  description: 已读标识：0否1是
+                page:
+                  type: integer
+                size:
+                  type: integer
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/TaskList'
+ /taskRecs/read:
+   post:
+     tags:
+       - 任务管理task
+     summary: '查看个人任务信息，标记为已读'
+     operationId: readTasks
+     parameters:
+        - name: taskIds
+          in: body
+          required: true
+          description: 任务ID数组
+          schema:
+            type: array
+            items:
+              type: string
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+####流程跟踪####
+ /consFlows/:
+   post:
+     tags:
+       - 流程跟踪flow
+     summary: '新增流程节点日志信息'
+     operationId: addFlowLog
+     parameters:
+       - name: flowLogVo
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/FlowLog'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+ /consFlows/view:
+   get:
+     tags:
+       - 流程跟踪flow
+     summary: '根据舆情ID查询流程节点信息（自治区用户流程查看节点包括上报、研判、审批、处置、结束；盟市用户流程查看节点包括研判、审批、处置、结束）'
+     operationId: findFlowLogs
+     parameters:
+       - name: consId
+         in: query
+         description: 舆情ID
+         type: string
+       - name: userType
+         in: query
+         description: 用户类型：自治区0、盟市1
+         type: string
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               type: array
+               items:
+                 $ref: '#/definitions/FlowLog'
+################ definitions#################
+definitions:
+#### report ####
+ ConsInfo:
+   type: object
+   properties:
+     id:
+       type: string
+     title:
+       type: string
+       description: 列表显示
+     infoUrl:
+       type: string
+       description: 列表显示
+     content:
+       type: string
+       description: 列表显示
+     sourceTypeId:
+       type: string
+     sourceTypeName:
+       type: string
+       description: 列表显示
+     websiteName:
+       type: string
+       description: 列表显示
+     reportWay:
+       type: string
+       description: 信息上报渠道：0互联网舆情上报  1内部录入 2舆情发现系统  3舆情监测分析 4态势感知系统
+     reporter:
+       type: string
+     reporterTel:
+       type: string
+     reportReason:
+       type: string
+     receiveOrgCode:
+       type: string
+     lastDealUser:
+       type: string
+       description: 列表显示
+     lastDealTime:
+       type: string
+       format: date-time
+       description: 列表显示
+     status:
+       type: string
+       description: 舆情信息状态：0未上报 1已上报(待研判) 2已研判 3短信上报 4已审批通过 5已退回 6处置中 7已完成 8已忽略
+       enum:
+         - 0
+         - 1
+         - 2
+         - 3
+         - 4
+         - 5
+         - 6
+         - 7
+         - 8
+ ConsInfoList:
+   type: object
+   allOf:
+     - $ref: '#/definitions/ReturnResult'
+   properties:
+     data:
+       type: object
+       properties:
+         totalElements:
+           type: integer
+           description: 记录总数
+         totalPages:
+           type: integer
+           description: 总页数
+         first:
+           type: boolean
+           description: 是否第一页
+         last:
+           type: boolean
+           description: 是否最后一页
+         number:
+           type: integer
+           description: 当前页数，页码从0开始
+         size:
+           type: integer
+           description: 每页记录数
+         sort:
+           type: string
+         numberOfElements:
+           type: integer
+           description: 返回记录条数
+         content:
+           type: array
+           items:
+             $ref: '#/definitions/ConsInfo'
+ ConsInfoAll:
+   type: object
+   properties:
+     consInfo:
+       $ref: '#/definitions/ConsInfo'
+     fileIds:
+       type: array
+       items:
+         type: string
+         description: 舆情相关附件ID数组，前端传入
+     fileDeleteIds:
+       type: array
+       items:
+         type: string
+         description: 删除的附件ID数组，前端传入
+ ConsInfoVo:
+   type: object
+   properties:
+     id:
+       type: string
+     title:
+       type: string
+       description: 列表显示
+     infoUrl:
+       type: string
+       description: 列表显示
+     content:
+       type: string
+       description: 列表显示
+     sourceTypeId:
+       type: string
+     sourceTypeName:
+       type: string
+       description: 列表显示
+     websiteName:
+       type: string
+       description: 列表显示
+     reportWay:
+       type: string
+       description: 信息上报渠道：0互联网舆情上报  1内部录入 2舆情发现系统  3舆情监测分析 4态势感知系统
+     reporter:
+       type: string
+     reporterTel:
+       type: string
+     reportReason:
+       type: string
+     receiveOrgCode:
+       type: string
+     lastDealUser:
+       type: string
+       description: 列表显示
+     lastDealTime:
+       type: string
+       format: date-time
+       description: 列表显示
+     status:
+       type: string
+       description: 舆情信息状态：0未上报 1已上报(待研判) 2已研判 3短信上报 4已审批通过 5已退回 6处置中 7已完成 8已忽略
+       enum:
+         - 0
+         - 1
+         - 2
+         - 3
+         - 4
+         - 5
+         - 6
+         - 7
+         - 8
+     consEvidences:
+       type: array
+       items:
+         $ref: '#/definitions/ConsEvidence'
+       description: 电子取证对象数组
+ ConsInfoVoList:
+   type: object
+   allOf:
+     - $ref: '#/definitions/ReturnResult'
+   properties:
+     data:
+       type: object
+       properties:
+         totalElements:
+           type: integer
+           description: 记录总数
+         totalPages:
+           type: integer
+           description: 总页数
+         first:
+           type: boolean
+           description: 是否第一页
+         last:
+           type: boolean
+           description: 是否最后一页
+         number:
+           type: integer
+           description: 当前页数，页码从0开始
+         size:
+           type: integer
+           description: 每页记录数
+         sort:
+           type: string
+         numberOfElements:
+           type: integer
+           description: 返回记录条数
+         content:
+           type: array
+           items:
+             $ref: '#/definitions/ConsInfoVo'
+ AnalyzeInfo:
+   type: object
+   properties:
+     title:
+       type: string
+     content:
+       type: string
+#### stat ####
+ reportStatVo:
+   type: object
+   properties:
+     infoTotalNum:
+       type: integer
+       description: 上报舆情数量
+ taskStatVo:
+   type: object
+   properties:
+     taskTotalNum:
+       type: integer
+       description: 接收任务数量
+ consSourceStatVo:
+   type: object
+   properties:
+      sourceType:
+        type: array
+        description: 来源类型
+        items:
+          type: string
+      totalNum:
+        type: array
+        description: 舆情总数量
+        items:
+          type: integer
+ consTypeStatVo:
+   type: object
+   properties:
+     statTime:
+       type: array
+       description: 统计时间
+       items:
+         type: string
+         format: date-time
+     newTotalNum:
+       type: array
+       description: 新增舆情数量
+       items:
+         type: integer
+     foucsTotalNum:
+       type: array
+       description: 重点舆情数量
+       items:
+         type: integer
+ reportWayStatVo:
+    type: object
+    properties:
+      reportWay:
+        type: array
+        description: 上报渠道：自治区网信办、盟市网信办、旗县网信办、厅局、社会举报、第三方服务
+        items:
+          type: string
+      infoTotalNum:
+        type: array
+        description: 各渠道上报舆情数量
+        items:
+          type: integer
+ reportValidStatVo:
+     type: object
+     properties:
+       totalNum:
+         type: integer
+         description: 上报舆情总数量
+       validNum:
+         type: integer
+         description: 上报舆情有效数量
+ reportTabVo:
+     type: object
+     properties:
+       tagFlag:
+         type: integer
+         description: 标签含义： 0待上报 1已上报
+       totalNum:
+         type: integer
+         description: 总数量
+ reportRecTabVo:
+     type: object
+     properties:
+       tagFlag:
+         type: integer
+         description: 标签含义： 0待处理 1已处理 2已退回
+       totalNum:
+         type: integer
+         description: 总数量
+ approvalTabVo:
+     type: object
+     properties:
+       tagFlag:
+         type: integer
+         description: 标签含义： 0待审批，1已审批
+       totalNum:
+         type: integer
+         description: 总数量
+ taskRecTabVo:
+     type: object
+     properties:
+       tagFlag:
+         type: integer
+         description: 标签含义： 0未接收 1已接收
+       totalNum:
+         type: integer
+         description: 总数量
+#### judge ####
+ ConsJudgeVo:
+   type: object
+   properties:
+     id:
+       type: string
+     infoId:
+       type: string
+     isInvolve:
+       type: string
+       description: 是否涉区 0是1否
+     tagType:
+       type: string
+       description: 舆情标签类型：0新增舆情 1重点舆情
+       enum:
+         - 0
+         - 1
+     infoTypeIds:
+       type: array
+       description: 信息类型ID数组
+       items:
+         type: string
+     opinion:
+       type: string
+     topicId:
+       type: string
+       description: 重点专题ID
+     topicName:
+       type: string
+       description: 重点专题名称
+#### evidence ####
+ ConsEvidence:
+   type: object
+   properties:
+     id:
+       type: string
+     infoId:
+       type: string
+     infoUrl:
+       type: string
+     photoLocation:
+       type: string
+       description: 列表显示
+     edTime:
+       type: string
+       format: date-time
+#### approval ####
+ ConsApproval:
+   type: object
+   properties:
+     id:
+       type: string
+     infoId:
+       type: string
+     submitter:
+       type: string
+     submitTime:
+       type: string
+       format: date-time
+     approvalNode:
+       type: string
+       description: 审批节点：监管中心/带班处长center_audit 、办领导leader_audit
+       enum:
+         - center_audit
+         - leader_audit
+     approvalerId:
+       type: string
+     approvaler:
+       type: string
+     approvalTime:
+       type: string
+       format: date-time
+     approvalResult:
+       type: string
+       description: 审批结果：0同意 1退回
+       enum:
+         - 0
+         - 1
+     approvalOpinion:
+       type: string
+     approvalAdviceIds:
+       type: array
+       items:
+         type: string
+       description: 常用审批意见ID数组
+ PreCommandVo:
+   type: object
+   properties:
+     id:
+       type: string
+     judgeOpinion:
+       type: string
+       description: 值班员研判意见
+     centerOpinion:
+       type: string
+       description: 监管中心审批意见
+     leaderOpinion:
+       type: string
+       description: 办领导审批意见
+ ConsApprVo:
+   type: object
+   properties:
+     consInfoVo:
+       $ref: '#/definitions/ConsInfoVo'
+     approvalNode:
+       type: string
+       description: 审批节点：监管中心/带班处长center_audit 、办领导leader_audit
+ ConsApprVoList:
+   type: object
+   allOf:
+     - $ref: '#/definitions/ReturnResult'
+   properties:
+     data:
+       type: object
+       properties:
+         totalElements:
+           type: integer
+           description: 记录总数
+         totalPages:
+           type: integer
+           description: 总页数
+         first:
+           type: boolean
+           description: 是否第一页
+         last:
+           type: boolean
+           description: 是否最后一页
+         number:
+           type: integer
+           description: 当前页数，页码从0开始
+         size:
+           type: integer
+           description: 每页记录数
+         sort:
+           type: string
+         numberOfElements:
+           type: integer
+           description: 返回记录条数
+         content:
+           type: array
+           items:
+             $ref: '#/definitions/ConsApprVo'
+#### topic ####
+ Topic:
+   type: object
+   properties:
+     id:
+       type: string
+     name:
+       type: string
+ TopicKeyword:
+   type: object
+   properties:
+     id:
+       type: string
+     topicId:
+       type: string
+     keyword:
+       type: string
+#### task ####
+ Task:
+   type: object
+   properties:
+     id:
+       type: string
+     infoId:
+       type: string
+     infoTitle:
+       type:  string
+       description: 列表显示
+     infoUrl:
+       type: string
+       description: 列表显示
+     title:
+       type: string
+       description: 列表显示
+     content:
+       type: string
+     sendTime:
+       type: string
+       format: date-time
+     taskStatus:
+       type: string
+       description: 列表显示 任务状态：0未下发 1已下发
+       enum:
+         - 0
+         - 1
+     createBy:
+       type: string
+       description: 列表显示
+     createTime:
+       type: string
+       format: date-time
+       description: 列表显示
+ TaskList:
+   type: object
+   allOf:
+     - $ref: '#/definitions/ReturnResult'
+   properties:
+     data:
+       type: object
+       properties:
+         totalElements:
+           type: integer
+           description: 记录总数
+         totalPages:
+           type: integer
+           description: 总页数
+         first:
+           type: boolean
+           description: 是否第一页
+         last:
+           type: boolean
+           description: 是否最后一页
+         number:
+           type: integer
+           description: 当前页数，页码从0开始
+         size:
+           type: integer
+           description: 每页记录数
+         sort:
+           type: string
+         numberOfElements:
+           type: integer
+           description: 返回记录条数
+         content:
+           type: array
+           items:
+             $ref: '#/definitions/Task'
+ TaskVo:
+   type: object
+   properties:
+     task:
+       $ref: '#/definitions/Task'
+     orgIds:
+       type: array
+       items:
+         type: string
+       description: 任务接收部门ID数组
+ TaskRecVo:
+   type: object
+   properties:
+     id:
+       type: string
+     taskId:
+       type: string
+     orgId:
+       type: string
+     orgName:
+       type: string
+     readFlag:
+       type: string
+       description: 已读标识：0否1是
+     taskReceive:
+       type: array
+       items:
+         $ref: '#/definitions/TaskReceive'
+       description: 接收人员对象数组
+ TaskReceive:
+   type: object
+   properties:
+     id:
+       type: string
+     taskId:
+       type: string
+     receiverName:
+       type: string
+     readFlag:
+       type: string
+       description: 已读标识：0否1是
+     readTime:
+       type: string
+       format: date-time
+#### flow ####
+ FlowLog:
+   type: object
+   properties:
+     id:
+       type: string
+     entityId:
+       type: string
+       description: 业务实体ID
+     flowNode:
+       type: string
+       description: 流程节点：信息上报report、值班人员研判judge、监管中心领导审批center_audit、办领导审批leader_audit、值班人员处置cmd、值班人员完成：cmd_end、值班人员删除ignore
+       enum:
+         - report
+         - judge
+         - center_audit
+         - leader_audit
+         - cmd
+         - cmd_end
+         - ignore
+     dealOrgName:
+       type: string
+       description: 处理部门名称（对应每个节点的操作人所属部门）
+     dealUserName:
+       type: string
+       description: 处理人姓名（对应每个节点的操作人）
+     dealTime:
+       type: string
+       format: date-time
+       description: 处理时间（对应每个节点的操作时间）
+     dealContent:
+       type: string
+       description: 处理内容(后台封装处理内容，具体格式为：上报时内容为“上报”；研判时内容为“研判意见：+opinion”；审批时内容为“审批结果：+approvalResult”；处置时内容为“生成调控单，处置中”；完成时内容为“处置完成”；删除时内容为“已删除处理”)
+##### common model####
+ ReturnResult:
+    type: object
+    properties:
+      code:
+        type: integer
+        description: >-
+          2000  操作成功
+          4000 操作失败
+          4001 验证码出错
+          4002 用户名或密码错误
+          5000 后台逻辑错误
+          5001 令牌失效或过期
+          5009 未知错误
+      msg:
+        type: string
+
+############################ parameters#####################
+parameters:
+  id-p:
+    name: id
+    in: path
+    required: true
+    description: 主键ID
+    type: string

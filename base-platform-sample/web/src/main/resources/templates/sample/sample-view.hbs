@@ -1,0 +1,62 @@
+
+<div class="page-header">
+
+</div>
+
+<div class="row">
+    <div class="col-xs-12">
+        <!-- PAGE CONTENT BEGINS -->
+        <div class="hidden">
+            <input type="text" id="form-field-id" name="id" value="${model.id}"/>
+        </div>
+        <ul class="profile-user-info profile-user-info-striped" style="border: none" id="sample-data">
+            <li class='profile-info-row'><li class='profile-info-name'>名称：</li>
+            <li class='profile-info-value'><span class='h4 editable'>{{model.title}}</span></li>
+            <li class='profile-info-row'><li class='profile-info-name'>内容：</li>
+            <li class='profile-info-value'><span class='h4 editable'>{{model.content}}</span></li>
+            <li class='profile-info-row'><li class='profile-info-name'>创建时间：</li>
+            <li class='profile-info-value'><span class='h4 editable'>{{model.createTime}}</span></li>
+        </ul>
+        <!-- PAGE CONTENT ENDS -->
+    </div>
+    <!-- /.col -->
+</div>
+<!-- /.row -->
+
+<!--<script id="sample-data-template" type="text/x-handlebars-template">-->
+        <!--{{#data}}-->
+<!--<li class='profile-info-row'><li class='profile-info-name'>{{name}}：</li>-->
+<!--<li class='profile-info-value'><span class='h4 editable'>{{value}}</span></li>-->
+        <!--{{/data}}-->
+<!--</script>-->
+
+<!-- inline scripts related to this page -->
+<script type="text/javascript">
+    var scripts = [null,null];
+    $('.page-content').ace_ajax('loadScripts', scripts, function () {
+        var dataArray = [],html = [];
+
+        backPrevPage('fa-bullhorn',localStorage.getItem('abrs-title')+'查看');
+
+        <!--dataArray.push({-->
+        <!--name:'名称',-->
+        <!--value:'{{model.title}}'-->
+        <!--});-->
+
+        <!--dataArray.push({-->
+        <!--name:'内容',-->
+        <!--value:'{{model.content}}'-->
+        <!--});-->
+
+        <!--dataArray.push({-->
+        <!--name:'创建时间',-->
+        <!--value:'{{model.createDate}}'-->
+        <!--});-->
+
+        <!--var source = $("#sample-data-template").html();-->
+        <!--var template = Handlebars.compile(source);-->
+        <!--var html    = template({data:dataArray});-->
+
+        <!--$('#sample-data').append(html);-->
+    });
+</script>

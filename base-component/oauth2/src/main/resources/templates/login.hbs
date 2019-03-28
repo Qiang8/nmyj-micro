@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Spring Security SSO</title>
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" />
+</head>
+
+<body onload='document.f.username.focus();'>
+<div class="container">
+{{param.error}}
+    <h3>登录</h3><form name='f' action='{{contextPath}}/login' method='POST'>
+        <table>
+            <tr><td>用户名:</td><td><input type='text' name='username' value=''></td></tr>
+            <tr><td>密码:</td><td><input type='password' name='password'/></td></tr>
+            <tr><td colspan='2'><input name="submit" type="submit" value="Login"/></td></tr>
+            <!--<input name="{{tokenParameter}}" type="hidden" value="{{tokenValue}}" />-->
+        </table>
+    </form>
+</div>
+</body>
+</html>

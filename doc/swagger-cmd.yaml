@@ -1,0 +1,517 @@
+swagger: '2.0'
+info:
+  description: >-
+    生成调控单、舆情处置、处置情况办理与反馈等.
+  version: 1.0.0
+  title: cmd舆情处置
+host: 127.0.0.1:8000
+basePath: /cdp-cmd/v1
+tags:
+  - name: 舆情处置dispose
+    description: 生成调控单、调控单维护与管理、状态更新
+  - name: 处置办理treat
+    description: 处置办理情况
+  - name: 处置反馈feedback
+    description: 处置情况反馈
+schemes:
+  - http
+paths:
+ ####舆情处置####
+ /commands/:
+   post:
+     tags:
+       - 舆情处置dispose
+     summary: '生成舆情调控单'
+     operationId: addCommandVo
+     parameters:
+       - name: commandVo
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/CommandVo'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+ /commands/{id}:
+   put:
+     tags:
+       - 舆情处置dispose
+     summary: '修改舆情调控单信息'
+     operationId: updateCommandVo
+     parameters:
+       - $ref: '#/parameters/id-p'
+       - name: commandVo
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/CommandAllVo'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+   get:
+     tags:
+       - 舆情处置dispose
+     summary: '获取单条舆情调控单信息'
+     operationId: findCommandVoById
+     parameters:
+       - $ref: '#/parameters/id-p'
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               $ref: '#/definitions/CommandVo'
+ /commands/search:
+    post:
+        tags:
+          - 舆情处置dispose
+        summary: '根据条件查询舆情调控单列表-分页'
+        operationId: findCommands
+        parameters:
+          - name: commandVO
+            in: body
+            required: true
+            schema:
+              type: object
+              properties:
+                handleFlag:
+                  type: string
+                  description: 处置状态：0处置中 1已完成。默认值由前端传入参数。
+                createOrgId:
+                  type: string
+                  description: 创建部门ID
+                page:
+                  type: integer
+                size:
+                  type: integer
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/CommandList'
+ /commandRecs/search:
+    post:
+        tags:
+          - 舆情处置dispose
+        summary: '根据条件查询接收舆情调控单列表-分页'
+        operationId: findCommandRecs
+        parameters:
+          - name: commandRecVO
+            in: body
+            required: true
+            schema:
+              type: object
+              properties:
+                handleFlag:
+                  type: string
+                  description: 处置状态：0处置中 1已完成。默认值由前端传入参数。
+                orgId:
+                  type: string
+                  description: 具体处置部门ID
+                page:
+                  type: integer
+                size:
+                  type: integer
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/CommandList'
+ /commands/updateStatus:
+    put:
+        tags:
+          - 舆情处置dispose
+        summary: '当舆情调控单进行完成或收到处置部门反馈等操作时，通过前台传参，后台将CD_COMMAND表中的handle_flag更新为对应的处置状态'
+        operationId: updateHandleStatus
+        parameters:
+          - name: cdId
+            in: query
+            description: 调控单ID
+            type: string
+          - name: status
+            in: query
+            description: 调控单处置状态：0处置中 1已完成
+            type: string
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/ReturnResult'
+ /commands/export:
+   get:
+     tags:
+       - 舆情处置dispose
+     summary: '导出调控单'
+     operationId: exportCommand
+     produces:
+       - 'application/octet-stream'
+     parameters:
+       - name: cdId
+         in: query
+         required: true
+         type: string
+         description: 调控单ID
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+ ####处置办理####
+ /treatments/:
+   post:
+     tags:
+       - 处置办理treat
+     summary: '记录调控单办理情况'
+     operationId: addTreatment
+     parameters:
+       - name: treatment
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/Treatment'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+ /treatments/{id}:
+   put:
+     tags:
+       - 处置办理treat
+     summary: '更新调控单办理情况'
+     operationId: updateTreatment
+     parameters:
+       - $ref: '#/parameters/id-p'
+       - name: treatment
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/Treatment'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+   get:
+     tags:
+       - 处置办理treat
+     summary: '获取单条调控单办理信息'
+     operationId: findTreatmentById
+     parameters:
+       - $ref: '#/parameters/id-p'
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               $ref: '#/definitions/Treatment'
+   delete:
+     tags:
+       - 处置办理treat
+     summary: '删除调控单办理信息'
+     operationId: deleteTreatment
+     parameters:
+       - $ref: '#/parameters/id-p'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+ /treatments/searchAll:
+   get:
+     tags:
+       - 处置办理treat
+     summary: '查询办理情况列表-不分页'
+     operationId: findTreatmentsAll
+     parameters:
+        - name: cdId
+          in: query
+          required: true
+          type: string
+          description: 调控单ID
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               type: array
+               items:
+                 $ref: '#/definitions/Treatment'
+
+ ####处置反馈####
+ /feedbacks/:
+   post:
+     tags:
+       - 处置反馈feedback
+     summary: '新增处置反馈情况信息'
+     operationId: addFeedbackVo
+     parameters:
+       - name: feedbackVo
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/FeedbackVo'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+ /feedbacks/{id}:
+   get:
+     tags:
+       - 处置反馈feedback
+     summary: '获取单条处置反馈情况信息'
+     operationId: findFeedbackVoById
+     parameters:
+       - $ref: '#/parameters/id-p'
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               $ref: '#/definitions/FeedbackVo'
+ /feedbacks/searchAll:
+   post:
+     tags:
+       - 处置反馈feedback
+     summary: '查询处置反馈情况列表-不分页'
+     operationId: findFeedbacksAll
+     parameters:
+        - name: feedbackVO
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              cdId:
+                type: string
+                description: 调控单ID
+              orgId:
+                type: string
+                description: 反馈部门ID，为空时查询全部
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               type: array
+               items:
+                 $ref: '#/definitions/Feedback'
+
+
+################ definitions#################
+definitions:
+#### dispose ####
+ Command:
+   type: object
+   properties:
+     id:
+       type: string
+     infoId:
+       type: string
+     title:
+       type: string
+       description: 列表显示
+     startTime:
+       type: string
+       format: date-time
+     startWebsite:
+       type: string
+     transmission:
+       type: string
+     judgeOpinion:
+       type: string
+     centerOpinion:
+       type: string
+     leaderOpinion:
+       type: string
+     handleTypeIds:
+       type: array
+       items:
+         type: string
+         description: 处置类型ID数组
+     handleFlag:
+       type: string
+       description: 列表显示 处置状态：0处置中 1已完成
+       enum:
+         - 0
+         - 1
+     createOrgId:
+       type: string
+     createBy:
+       type: string
+       description: 列表显示
+     createTime:
+       type: string
+       format: date-time
+       description: 列表显示
+ CommandVo:
+   type: object
+   properties:
+     command:
+       $ref: '#/definitions/Command'
+     orgIds:
+       type: array
+       items:
+         type: string
+         description: 处置部门ID数组
+ CommandAllVo:
+   type: object
+   properties:
+     command:
+       $ref: '#/definitions/Command'
+     orgIds:
+       type: array
+       items:
+         type: string
+         description: 处置部门ID数组
+     fileIds:
+       type: array
+       items:
+         type: string
+         description: 调控单相关附件ID数组，前端传入
+     fileDeleteIds:
+       type: array
+       items:
+         type: string
+         description: 删除的附件ID数组，前端传入
+ CommandList:
+   type: object
+   allOf:
+     - $ref: '#/definitions/ReturnResult'
+   properties:
+     data:
+       type: object
+       properties:
+         totalElements:
+           type: integer
+           description: 记录总数
+         totalPages:
+           type: integer
+           description: 总页数
+         first:
+           type: boolean
+           description: 是否第一页
+         last:
+           type: boolean
+           description: 是否最后一页
+         number:
+           type: integer
+           description: 当前页数，页码从0开始
+         size:
+           type: integer
+           description: 每页记录数
+         sort:
+           type: string
+         numberOfElements:
+           type: integer
+           description: 返回记录条数
+         content:
+           type: array
+           items:
+             $ref: '#/definitions/Command'
+ Treatment:
+   type: object
+   properties:
+     id:
+       type: string
+     cdId:
+       type: string
+     treatment:
+       type: string
+     treatBy:
+       type: string
+     treatTime:
+       type: string
+       format: date-time
+     notes:
+       type: string
+ Feedback:
+   type: object
+   properties:
+     id:
+       type: string
+     cdId:
+       type: string
+     orgId:
+       type: string
+     content:
+       type: string
+     feedbackBy:
+       type: string
+     feedbackTime:
+       type: string
+       format: date-time
+     isComplet:
+       type: string
+       description: 是否完成：0否 1是
+       enum:
+         - 0
+         - 1
+     notes:
+       type: string
+ FeedbackVo:
+   type: object
+   properties:
+     feedback:
+       $ref: '#/definitions/Feedback'
+     fileIds:
+       type: array
+       items:
+         type: string
+         description: 反馈相关附件ID数组，前端传入
+     fileDeleteIds:
+       type: array
+       items:
+         type: string
+         description: 删除的附件ID数组，前端传入
+
+##### common model####
+ ReturnResult:
+    type: object
+    properties:
+      code:
+        type: integer
+        description: >-
+          2000  操作成功
+          4000 操作失败
+          4001 验证码出错
+          4002 用户名或密码错误
+          5000 后台逻辑错误
+          5001 令牌失效或过期
+          5009 未知错误
+      msg:
+        type: string
+
+############################ parameters#####################
+parameters:
+  id-p:
+    name: id
+    in: path
+    required: true
+    description: 主键ID
+    type: string

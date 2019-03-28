@@ -1,0 +1,847 @@
+swagger: '2.0'
+info:
+  description: >-
+    交接班管理、日报管理、月报管理、专刊管理等.
+  version: 1.0.0
+  title: daily工作台日常管理
+host: 127.0.0.1:8000
+basePath: /cdp-daily/v1
+tags:
+  - name: 交接班管理dutyShift
+    description: 交接班管理
+  - name: 日报管理daily
+    description: 日报管理
+  - name: 月报管理monthly
+    description: 月报管理
+  - name: 专刊管理issue
+    description: 专刊管理
+schemes:
+  - http
+paths:
+####交接班管理####
+ /dutyShifts/:
+   post:
+     tags:
+       - 交接班管理dutyShift
+     summary: '新增交接班信息'
+     operationId: addDutyShift
+     parameters:
+       - name: dutyShift
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/DutyShiftVo'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+ /dutyShifts/{id}:
+   get:
+     tags:
+       - 交接班管理dutyShift
+     summary: '获取单条交接班信息'
+     operationId: findDutyShiftById
+     parameters:
+       - $ref: '#/parameters/id-p'
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               $ref: '#/definitions/DutyShiftVo'
+ /dutyShifts/search:
+     post:
+         tags:
+           - 交接班管理dutyShift
+         summary: '根据条件查询交接班信息列表-分页'
+         operationId: findDutyShifts
+         parameters:
+           - name: dutyShiftVO
+             in: body
+             required: true
+             schema:
+               type: object
+               properties:
+                 title:
+                   type: string
+                   description: 标题
+                 fromTeamId:
+                   type: string
+                   description: 交班小组
+                 toTeamId:
+                   type: string
+                   description: 接班小组
+                 page:
+                   type: integer
+                 size:
+                   type: integer
+         responses:
+           200:
+             description: OK
+             schema:
+               $ref: '#/definitions/DutyShiftList'
+ /dutyShifts/lately:
+    get:
+      tags:
+        - 交接班管理dutyShift
+      summary: '获取最新的一条交接班记录'
+      operationId: findLatelyDutyShift
+      responses:
+        200:
+          description: ok
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                $ref: '#/definitions/DutyShiftVo'
+####日报管理####
+ /dailys/:
+   post:
+     tags:
+       - 日报管理daily
+     summary: '新增日报信息（后台同步调用大数据平台的接口存入大数据平台）'
+     operationId: addDaily
+     parameters:
+       - name: daily
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/DailyVo'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+ /dailys/{id}:
+   put:
+     tags:
+       - 日报管理daily
+     summary: '修改日报信息'
+     operationId: updateDaily
+     parameters:
+       - $ref: '#/parameters/id-p'
+       - name: daily
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/DailyVo'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+   get:
+     tags:
+       - 日报管理daily
+     summary: '获取单条日报信息'
+     operationId: findDailyById
+     parameters:
+       - $ref: '#/parameters/id-p'
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               $ref: '#/definitions/Daily'
+   delete:
+     tags:
+       - 日报管理daily
+     summary: '删除日报信息'
+     operationId: deleteDaily
+     parameters:
+       - $ref: '#/parameters/id-p'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+ /dailys/search:
+    post:
+        tags:
+          - 日报管理daily
+        summary: '根据条件查询日报信息列表-分页（与大数据平台对接进行标题和附件内容的检索）'
+        operationId: findDailys
+        parameters:
+          - name: dailyVO
+            in: body
+            required: true
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: 日报标题
+                page:
+                  type: integer
+                size:
+                  type: integer
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/DailyList'
+ /dailys/searchAll:
+    get:
+      tags:
+        - 日报管理daily
+      summary: '根据条件查询日报信息列表-不分页'
+      operationId: findDailysAll
+      responses:
+        200:
+          description: ok
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/Daily'
+ /dailys/publish:
+    put:
+        tags:
+          - 日报管理daily
+        summary: '日报信息发布，后台将该日报状态置为已发布状态'
+        operationId: publishDaily
+        parameters:
+          - name: dailyId
+            in: query
+            description: 日报ID
+            type: string
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/ReturnResult'
+ /dailys/export:
+   get:
+     tags:
+       - 日报管理daily
+     summary: '导出当日建议上舆情信息'
+     operationId: exportConsDaily
+     produces:
+       - 'application/octet-stream'
+     parameters:
+       - name: infoIds
+         in: query
+         required: true
+         type: array
+         items:
+           type: string
+         description: 舆情ID数组
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+# /dailyItems/getConsInfos:
+#   get:
+#     tags:
+#       - 日报管理daily
+#     summary: '获取当前还未被导入日报的当天舆情信息列表'
+#     operationId: getUnImportItems
+#     responses:
+#       200:
+#         description: ok
+#         schema:
+#           type: object
+#           allOf:
+#             - $ref: '#/definitions/ReturnResult'
+#           properties:
+#             data:
+#               type: array
+#               items:
+#                 $ref: '#/definitions/ConsInfoVo'
+# /dailyItems/update:
+#    post:
+#     tags:
+#       - 日报管理daily
+#     summary: '批量更新上日报舆情中间表信息，更新isImport、importTime、dailyId字段'
+#     operationId: updateDailyItems
+#     parameters:
+#       - name: dailyItemsVo
+#         in: body
+#         required: true
+#         schema:
+#           type: object
+#           properties:
+#             infoIds:
+#               type: array
+#               items:
+#                 type: string
+#               description: "舆情ID数组"
+#             dailyId:
+#               type: string
+#               description: "日报ID"
+#     responses:
+#       200:
+#         description: ok
+#         schema:
+#          $ref: '#/definitions/ReturnResult'
+####月报管理####
+ /monthlys/:
+   post:
+     tags:
+       - 月报管理monthly
+     summary: '新增月报信息（后台同步调用大数据平台的接口存入大数据平台）'
+     operationId: addMonthly
+     parameters:
+       - name: monthly
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/MonthlyVo'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+ /monthlys/{id}:
+   put:
+     tags:
+       - 月报管理monthly
+     summary: '修改月报信息'
+     operationId: updateMonthly
+     parameters:
+       - $ref: '#/parameters/id-p'
+       - name: monthly
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/MonthlyVo'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+   get:
+     tags:
+       - 月报管理monthly
+     summary: '获取单条月报信息'
+     operationId: findMonthlyById
+     parameters:
+       - $ref: '#/parameters/id-p'
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               $ref: '#/definitions/Monthly'
+   delete:
+     tags:
+       - 月报管理monthly
+     summary: '删除月报信息'
+     operationId: deleteMonthly
+     parameters:
+       - $ref: '#/parameters/id-p'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+ /monthlys/search:
+    post:
+        tags:
+          - 月报管理monthly
+        summary: '根据条件查询月报信息列表-分页（与大数据平台对接进行标题和附件内容的检索）'
+        operationId: findMonthlys
+        parameters:
+          - name: monthlyVO
+            in: body
+            required: true
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: 月报标题
+                page:
+                  type: integer
+                size:
+                  type: integer
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/MonthlyList'
+ /monthlys/publish:
+    put:
+        tags:
+          - 月报管理monthly
+        summary: '月报信息发布，后台将该月报状态置为已发布状态'
+        operationId: publishMonthly
+        parameters:
+          - name: monthId
+            in: query
+            description: 月报ID
+            type: string
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/ReturnResult'
+
+####专刊管理####
+ /issues/:
+   post:
+     tags:
+       - 专刊管理issue
+     summary: '新增专刊信息（后台同步调用大数据平台的接口存入大数据平台）'
+     operationId: addIssue
+     parameters:
+       - name: issue
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/IssueVo'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+ /issues/{id}:
+   put:
+     tags:
+       - 专刊管理issue
+     summary: '修改专刊信息'
+     operationId: updateIssue
+     parameters:
+       - $ref: '#/parameters/id-p'
+       - name: issue
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/IssueVo'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+   get:
+     tags:
+       - 专刊管理issue
+     summary: '获取单条专刊信息'
+     operationId: findIssueById
+     parameters:
+       - $ref: '#/parameters/id-p'
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               $ref: '#/definitions/Issue'
+   delete:
+     tags:
+       - 专刊管理issue
+     summary: '删除专刊信息'
+     operationId: deleteIssue
+     parameters:
+       - $ref: '#/parameters/id-p'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+ /issues/search:
+    post:
+        tags:
+          - 专刊管理issue
+        summary: '根据条件查询专刊信息列表-分页（与大数据平台对接进行标题和附件内容的检索）'
+        operationId: findIssues
+        parameters:
+          - name: issueVO
+            in: body
+            required: true
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: 专刊标题
+                page:
+                  type: integer
+                size:
+                  type: integer
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/IssueList'
+ /issues/publish:
+    put:
+        tags:
+          - 专刊管理issue
+        summary: '专刊信息发布，后台将该专刊状态置为已发布状态'
+        operationId: publishIssue
+        parameters:
+          - name: issueId
+            in: query
+            description: 专刊ID
+            type: string
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/ReturnResult'
+
+################ definitions#################
+definitions:
+#### DutyShift ####
+ DutyShift:
+   type: object
+   properties:
+     id:
+       type: string
+     title:
+       type: string
+       description: 列表显示
+     fromTeamId:
+       type: string
+     fromTeamName:
+       type: string
+       description: 列表显示
+     toTeamId:
+       type: string
+     toTeamName:
+       type: string
+       description: 列表显示
+     notes:
+       type: string
+     createTime:
+       type: string
+       format: date-time
+       description: 列表显示
+ DutyShiftList:
+   type: object
+   allOf:
+     - $ref: '#/definitions/ReturnResult'
+   properties:
+     data:
+       type: object
+       properties:
+         totalElements:
+           type: integer
+           description: 记录总数
+         totalPages:
+           type: integer
+           description: 总页数
+         first:
+           type: boolean
+           description: 是否第一页
+         last:
+           type: boolean
+           description: 是否最后一页
+         number:
+           type: integer
+           description: 当前页数，页码从0开始
+         size:
+           type: integer
+           description: 每页记录数
+         sort:
+           type: string
+         numberOfElements:
+           type: integer
+           description: 返回记录条数
+         content:
+           type: array
+           items:
+             $ref: '#/definitions/DutyShift'
+ DutyShiftVo:
+   type: object
+   properties:
+     dutyShift:
+       $ref: '#/definitions/DutyShift'
+     infoIds:
+       type: array
+       items:
+         type: string
+         description: 交接的舆情信息ID数组
+#### Daily ####
+ Daily:
+   type: object
+   properties:
+     id:
+       type: string
+     title:
+       type: string
+       description: 列表显示
+#     content:
+#       type: string
+     createBy:
+       type: string
+       description: 列表显示
+     createTime:
+       type: string
+       format: date-time
+       description: 列表显示
+#     updateBy:
+#       type: string
+#       description: 列表显示
+#     updateTime:
+#       type: string
+#       format: date-time
+#       description: 列表显示
+     status:
+       type: string
+       description: 状态（0未发布，1已发布）
+       enum:
+         - 0
+         - 1
+ DailyList:
+   type: object
+   allOf:
+     - $ref: '#/definitions/ReturnResult'
+   properties:
+     data:
+       type: object
+       properties:
+         totalElements:
+           type: integer
+           description: 记录总数
+         totalPages:
+           type: integer
+           description: 总页数
+         first:
+           type: boolean
+           description: 是否第一页
+         last:
+           type: boolean
+           description: 是否最后一页
+         number:
+           type: integer
+           description: 当前页数，页码从0开始
+         size:
+           type: integer
+           description: 每页记录数
+         sort:
+           type: string
+         numberOfElements:
+           type: integer
+           description: 返回记录条数
+         content:
+           type: array
+           items:
+             $ref: '#/definitions/Daily'
+ DailyVo:
+   type: object
+   properties:
+     daily:
+       $ref: '#/definitions/Daily'
+     fileIds:
+       type: array
+       items:
+         type: string
+         description: 日报相关附件ID数组，前端传入
+     fileDeleteIds:
+       type: array
+       items:
+         type: string
+         description: 删除的附件ID数组，前端传入
+ ConsInfoVo:
+   type: object
+   properties:
+     id:
+       type: string
+     title:
+       type: string
+     infoUrl:
+       type: string
+     content:
+       type: string
+     sourceTypeId:
+       type: string
+     sourceTypeName:
+       type: string
+     websiteName:
+       type: string
+#### Monthly ####
+ Monthly:
+   type: object
+   properties:
+     id:
+       type: string
+     title:
+       type: string
+       description: 列表显示
+     createBy:
+       type: string
+       description: 列表显示
+     cteateTime:
+       type: string
+       format: date-time
+       description: 列表显示
+     status:
+       type: string
+       description: 状态（0未发布，1已发布）
+       enum:
+         - 0
+         - 1
+ MonthlyList:
+   type: object
+   allOf:
+     - $ref: '#/definitions/ReturnResult'
+   properties:
+     data:
+       type: object
+       properties:
+         totalElements:
+           type: integer
+           description: 记录总数
+         totalPages:
+           type: integer
+           description: 总页数
+         first:
+           type: boolean
+           description: 是否第一页
+         last:
+           type: boolean
+           description: 是否最后一页
+         number:
+           type: integer
+           description: 当前页数，页码从0开始
+         size:
+           type: integer
+           description: 每页记录数
+         sort:
+           type: string
+         numberOfElements:
+           type: integer
+           description: 返回记录条数
+         content:
+           type: array
+           items:
+             $ref: '#/definitions/Monthly'
+ MonthlyVo:
+   type: object
+   properties:
+     Monthly:
+       $ref: '#/definitions/Monthly'
+     fileIds:
+       type: array
+       items:
+         type: string
+         description: 月报相关附件ID数组，前端传入
+     fileDeleteIds:
+       type: array
+       items:
+         type: string
+         description: 删除的附件ID数组，前端传入
+#### Issue ####
+ Issue:
+   type: object
+   properties:
+     id:
+       type: string
+     title:
+       type: string
+       description: 列表显示
+     createBy:
+       type: string
+       description: 列表显示
+     cteateTime:
+       type: string
+       format: date-time
+       description: 列表显示
+     status:
+       type: string
+       description: 状态（0未发布，1已发布）
+       enum:
+         - 0
+         - 1
+ IssueList:
+   type: object
+   allOf:
+     - $ref: '#/definitions/ReturnResult'
+   properties:
+     data:
+       type: object
+       properties:
+         totalElements:
+           type: integer
+           description: 记录总数
+         totalPages:
+           type: integer
+           description: 总页数
+         first:
+           type: boolean
+           description: 是否第一页
+         last:
+           type: boolean
+           description: 是否最后一页
+         number:
+           type: integer
+           description: 当前页数，页码从0开始
+         size:
+           type: integer
+           description: 每页记录数
+         sort:
+           type: string
+         numberOfElements:
+           type: integer
+           description: 返回记录条数
+         content:
+           type: array
+           items:
+             $ref: '#/definitions/Issue'
+ IssueVo:
+   type: object
+   properties:
+     issue:
+       $ref: '#/definitions/Issue'
+     fileIds:
+       type: array
+       items:
+         type: string
+         description: 专刊相关附件ID数组，前端传入
+     fileDeleteIds:
+       type: array
+       items:
+         type: string
+         description: 删除的附件ID数组，前端传入
+
+
+##### common model####
+ ReturnResult:
+    type: object
+    properties:
+      code:
+        type: integer
+        description: >-
+          2000  操作成功
+          4000 操作失败
+          4001 验证码出错
+          4002 用户名或密码错误
+          5000 后台逻辑错误
+          5001 令牌失效或过期
+          5009 未知错误
+      msg:
+        type: string
+
+############################ parameters#####################
+parameters:
+  id-p:
+    name: id
+    in: path
+    required: true
+    description: 主键ID
+    type: string

@@ -1,0 +1,192 @@
+swagger: '2.0'
+info:
+  description: >-
+    与内蒙一期值班系统对接获取值班人员相关数据.
+  version: 1.0.0
+  title: duty值班管理
+host: 127.0.0.1:8000
+basePath: /cdp-daily/v1
+tags:
+  - name: 值班管理duty
+    description: 值班管理
+schemes:
+  - http
+paths:
+####值班管理####
+ /dutys/today:
+    get:
+      tags:
+        - 值班管理duty
+      summary: '从值班系统获取当天值班小组及人员列表信息'
+      operationId: findTodayDutyTeamUsers
+      responses:
+        200:
+          description: ok
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/DutyUserVo'
+ /dutys/searchAll:
+    post:
+      tags:
+        - 值班管理duty
+      summary: '从值班系统根据条件获取值班小组及人员列表信息'
+      operationId: findDutyTeamUsers
+      parameters:
+        - name: dutyCode
+          in: query
+          required: true
+          description: 岗位代号:1、带班办领导 2、带班处长 3、舆情岗 4、网信通 5、机要岗 6、技术岗
+          type: string
+        - name: isBak
+          in: query
+          description: 主副班标志:1、主班 2、副班（针对舆情岗、网信通有副班，其他没有）
+          type: string
+        - name: startTime
+          in: query
+          required: true
+          type: string
+          format: 'date-time'
+          description: 值班开始时间
+        - name: endTime
+          in: query
+          required: true
+          type: string
+          format: 'date-time'
+          description: 值班结束时间（两个时间可相同，相同查的是当天的）
+      responses:
+        200:
+          description: ok
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/DutyTeamUserVo'
+ /dutys/todayLeader:
+    post:
+      tags:
+        - 值班管理duty
+      summary: '从值班系统获取当天带班领导信息（带班办领导和带班处长）'
+      operationId: findDutyLeaders
+      parameters:
+        - name: dutyCode
+          in: query
+          required: true
+          description: 岗位代号:1、带班办领导 2、带班处长
+          type: string
+        - name: dutyType
+          in: query
+          required: true
+          description: 值班班次:0、全部 1、白班 2、夜班
+          type: string
+      responses:
+        200:
+          description: ok
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/LeaderUserVo'
+
+################ definitions#################
+definitions:
+#### Duty ####
+ DutyTeamUserVo:
+   type: object
+   properties:
+     teamId:
+       type: string
+       description: 值班小组ID
+     teamName:
+       type: string
+       description: 值班小组名称
+     userNames:
+       type: string
+       description: 值班小组成员名称，多个以逗号隔开
+     dutyTime:
+       type: string
+       format: date
+       description: 值班时间
+     responseLevel:
+       type: string
+ DutyUserVo:
+   type: object
+   properties:
+     dutyCode:
+       type: string
+       description: 岗位代号:1、带班办领导 2、带班处长 3、舆情岗 4、网信通 5、机要岗 6、技术岗
+     dutyTime:
+       type: string
+       format: date
+       description: 值班时间
+     isBak:
+       type: string
+       description: 是否副班：0否 1是
+     userId:
+       type: string
+       description: 值班人员ID
+     userName:
+       type: string
+       description: 值班人员名称
+     sex:
+       type: string
+       description: 性别：1男0女
+ LeaderUserVo:
+   type: object
+   properties:
+     teamId:
+       type: string
+       description: 值班小组ID
+     teamName:
+       type: string
+       description: 值班小组名称
+     dutyCode:
+       type: string
+       description: 岗位代号:1、带班办领导 2、带班处长 3、舆情岗 4、网信通 5、机要岗 6、技术岗
+     userId:
+       type: string
+       description: 值班人员ID
+     userName:
+       type: string
+       description: 值班人员名称
+     account:
+       type: string
+       description: 用户账号
+     sex:
+       type: string
+       description: 性别：1男0女
+     dutyType:
+       type: string
+       description: 值班班次:0、全部 1、白班 2、夜班
+     mobile:
+       type: string
+       description: 手机号
+##### common model####
+ ReturnResult:
+    type: object
+    properties:
+      code:
+        type: integer
+        description: >-
+          2000  操作成功
+          4000 操作失败
+          4001 验证码出错
+          4002 用户名或密码错误
+          5000 后台逻辑错误
+          5001 令牌失效或过期
+          5009 未知错误
+      msg:
+        type: string

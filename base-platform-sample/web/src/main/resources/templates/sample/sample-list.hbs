@@ -1,0 +1,164 @@
+<title>JqGrid 样例</title>
+
+<link rel="stylesheet" href="js/components/_mod/jquery-ui/jquery-ui.css"/>
+<link rel="stylesheet" href="js/components/bootstrap-datepicker/dist/css/bootstrap-datepicker3.css"/>
+<link rel="stylesheet" href="js/components/_mod/jqgrid/ui.jqgrid.css"/>
+
+<div class="row">
+    <div class="col-xs-12">
+        <div class="widget-box">
+            <div class="widget-body">
+                <div class="widget-main">
+                    <form class="form-inline" id="searchForm">
+                        <label>样例标题：</label>
+                        <input class="input-large" type="text" id="title" name="title">
+                        <button class="btn btn-success btn-sm" type="button" id="searchBtn">
+                            <span class="ace-icon fa fa-search icon-on-right bigger-110"></span>
+                            查询
+                        </button>
+                        <button class="btn btn-warning btn-sm" type="button" id="resetBtn">
+                            <span class="ace-icon fa fa-retweet icon-on-right bigger-110"></span>
+                            重置
+                        </button>
+                        {{#if operations.add}}
+                            <button class="btn btn-info btn-sm" type="button" id="addBtn">
+                                <span class="ace-icon fa fa-plus icon-on-right bigger-110"></span>
+                                新建
+                            </button>
+                        {{/if}}
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xs-12">
+        <table id="grid-table"></table>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var scripts = [null, null];
+    $('.page-content').ace_ajax('loadScripts', scripts, function () {
+        var initParam = G.initGridParam($("#searchForm"));
+        var appPath   = App.getAppPath();
+        var loadUrl   = appPath + '/sample/sample-list-load.action?rd=' + Math.random();
+        var editUrl   = '#page/sample/sample-edit.action';
+        var viewUrl   = '#page/sample/sample-view.action';
+        var deleteUrl = appPath + '/sample/sample-delete.action?rd=' + Math.random();
+
+        var $searchBtn  = $("#searchBtn");
+        var $resetBtn   = $("#resetBtn");
+        var $addBtn     = $("#addBtn");
+        var $searchForm = $("#searchForm");
+
+        var colModel = [
+            {name: 'id', index: 'id', width: 50, hidden: true},
+            {name: 'title', header: '标题', index: 'title', sortable: false, editable: false},
+            {name: 'content', header: '内容', index: 'content', sortable: false, editable: false},
+            {name: 'createTime', header: '创建时间', index: 'createTime', sortable: false, editable: false},
+            {name        : 'myac',
+                header   : '操作',
+                index    : '',
+                width    : 200,
+                fixed    : true,
+                sortable : false,
+                resize   : false,
+                formatter: operationFormatter
+            }
+        ];
+
+        function operationFormatter(cellvalue, options, rowData, action) {
+            cellvalue      = '';
+            var operations = [];
+
+            operations.push("<div style='margin-left:8px;font-size: 20px;'>");
+
+            {{#if operations.view}}
+                operations.push("<span title='查看' class='green ace-icon fa fa-book row-record-view'></span>&nbsp;&nbsp;&nbsp;");
+            {{/if}}
+
+            {{#if operations.edit}}
+                operations.push("<span title='编辑' class='blue ace-icon fa fa-edit row-record-edit'></span>&nbsp;&nbsp;&nbsp;");
+            {{/if}}
+
+            {{#if operations.delete}}
+                operations.push("<span title='删除' class='ace-icon red fa fa-trash-o row-record-delete'></span>&nbsp;&nbsp;&nbsp;");
+            {{/if}}
+
+
+            operations.push("</div>");
+            cellvalue = operations.join('');
+            return cellvalue;
+        }
+
+        var $gridTable = $('#grid-table');
+        $gridTable.tjGrid({
+            initParam  : initParam,
+            loadUrl    : loadUrl,
+            editUrl    : editUrl,
+            viewUrl    : viewUrl,
+            deleteUrl  : deleteUrl,
+            height     : '100%',
+            colModel   : colModel,
+            onSelectRow: function (id, stat, e) {
+                var className = $(e.target).attr('class');
+
+                if (!className) {
+                    return false;
+                }
+
+                if (className.indexOf('row-record-view') != -1) {
+                    if (initParam != undefined) {
+                        G.keepGridParam(initParam.$form, $("#" + this.id));
+                    }
+                    var viewHash = viewUrl + "?id=" + id;
+                    G.loadPageContent(viewHash);
+                }
+                else if (className.indexOf('row-record-edit') != -1) {
+                    if (initParam != undefined) {
+                        G.keepGridParam(initParam.$form, $("#" + this.id));
+                    }
+                    var editHash = editUrl + "?id=" + id;
+                    G.loadPageContent(editHash);
+                }
+                else if (className.indexOf('row-record-delete') != -1) {
+                    G.confirm({
+                        message : '确认删除记录！',
+                        callback: function (result) {
+                            if (result) {
+                                $.post(deleteUrl,
+                                        {id: id},
+                                        function (data) {
+                                            if (data.result) {
+                                                $gridTable.tjGrid('reloadGrid');
+                                            }
+                                        });
+                            }
+                        }
+                    });
+                }
+            }
+        });
+
+        $gridTable.tjGrid('initPageContentGrid');
+        $gridTable.tjGrid('triggerResizeGrid');
+
+        $searchBtn.click(function () {
+            G.search($searchForm, $gridTable);
+        });
+
+        $addBtn.click(function () {
+            G.loadPageContent(editUrl);
+        });
+
+        $resetBtn.click(function () {
+            initParam.rowIndex = 0;
+            $searchForm.resetForm();
+            G.search($searchForm, $gridTable);
+        });
+
+    });
+</script>

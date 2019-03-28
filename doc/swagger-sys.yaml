@@ -1,0 +1,1513 @@
+swagger: '2.0'
+info:
+  description: >-
+    系统登录、登出、用户管理、角色管理、权限管理、数据字典、组织机构、日志管理等.
+  version: 1.0.0
+  title: SYS系统管理
+host: 127.0.0.1:8000
+basePath: /sys/v1
+tags:
+  - name: 用户管理
+    description: 系统用户信息管理
+  - name: 用户服务
+    description: 用户信息服务
+  - name: 角色管理
+    description: 系统角色信息管理
+  - name: 角色服务
+    description: 角色信息服务
+  - name: 角色类型服务
+    description: 角色类型资源配置
+  - name: 菜单管理
+    description: 系统菜单信息管理
+  - name: 菜单服务
+    description: 菜单信息服务
+  - name: 机构管理
+    description: 系统单位、部门信息管理
+  - name: 字典管理
+    description: 系统数据字典管理
+  - name: 业务日志
+    description: 系统业务日志管理
+schemes:
+  - http
+paths:
+#### users ####
+  /users:
+    post:
+      tags:
+        - 用户管理
+      summary: '新增用户'
+      operationId: addUser
+      parameters:
+        - name: user
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+  /users/{id}:
+    get:
+      tags:
+        - 用户管理
+      summary: 获取单个用户信息
+      operationId: findUserById
+      parameters:
+        - $ref: '#/parameters/id-p'
+      responses:
+        200:
+          description:  OK
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                $ref: '#/definitions/User'
+    put:
+      tags:
+        - 用户管理
+      summary: '修改用户信息'
+      operationId: updateUser
+      parameters:
+        - $ref: '#/parameters/id-p'
+        - name: user
+          in: body
+          required: true
+          description: account不可编辑
+          schema:
+            $ref: '#/definitions/User'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+    delete:
+      tags:
+        - 用户管理
+      summary: '删除用户'
+      operationId: deleteUser
+      parameters:
+        - $ref: '#/parameters/id-p'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+  /users/search:
+    post:
+      tags:
+        - 用户管理
+      summary: '根据条件查询用户列表-分页'
+      operationId: findUsers
+      parameters:
+        - name: userVO
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              account:
+                type: string
+              name:
+                type: string
+              page:
+                type: integer
+              size:
+                type: integer
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/UserList'
+  /users/searchAll:
+      post:
+        tags:
+          - 用户管理
+        summary: '根据条件查询用户列表-不分页'
+        operationId: findUsersAll
+        parameters:
+          - name: userVO
+            in: body
+            required: true
+            schema:
+              type: object
+              properties:
+                account:
+                  type: string
+                name:
+                  type: string
+        responses:
+          200:
+            description: OK
+            schema:
+              type: object
+              allOf:
+                - $ref: '#/definitions/ReturnResult'
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '#/definitions/User'
+  /users/checkAccount:
+    post:
+      tags:
+        - 用户管理
+      summary: 检查用户名是否唯一
+      operationId: checkAccount
+      parameters:
+        - name: account
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              account:
+                type: string
+      responses:
+        200:
+          description:  OK
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                type: boolean
+  /userInfo/current:
+    get:
+      tags:
+        - 用户服务
+      summary: 获取当前用户信息
+      operationId: findCurrentUser
+      responses:
+        200:
+          description:  OK
+          schema:
+            type: object
+            allOf:
+            - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                $ref: '#/definitions/User'
+  /userInfo/roles:
+    get:
+      tags:
+        - 用户服务
+      summary: 获取用户角色信息
+      operationId: findUserRoles
+      parameters:
+        - name: userId
+          in: query
+          type: string
+          required: true
+      responses:
+        200:
+          description:  OK
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                type: object
+                properties:
+                  belong:
+                    type: array
+                    items:
+                      type: string
+                  all:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        key:
+                          type: string
+                        label:
+                          type: string
+    post:
+      tags:
+        - 用户服务
+      summary: 保存用户角色信息
+      operationId: saveUserRoles
+      parameters:
+        - name: userRole
+          in: body
+          required: true
+          description: roleIds记录用户角色id，数组。
+          schema:
+            type: object
+            properties:
+              userId:
+                type: string
+              roleIds:
+                type: array
+                items:
+                  type: string
+      responses:
+        200:
+          description:  OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+  /userInfo/resetPassword:
+    post:
+      tags:
+        - 用户服务
+      summary: 重置用户密码
+      operationId: resetPassword
+      parameters:
+        - name: userInfo
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              userId:
+                type: string
+      responses:
+        200:
+          description:  OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+  /userInfo/editPassword:
+    post:
+      tags:
+        - 用户服务
+      summary: 修改用户密码
+      operationId: editPassword
+      parameters:
+        - name: userInfo
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              userId:
+                type: string
+              oldPassword:
+                type: string
+              newPassword:
+                type: string
+      responses:
+        200:
+          description:  OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+#### roles ####
+  /roles:
+    post:
+      tags:
+        - 角色管理
+      summary: '新增角色'
+      operationId: addRole
+      parameters:
+        - name: role
+          in: body
+          description: typeName可不传输
+          required: true
+          schema:
+            $ref: '#/definitions/Role'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+  /roles/{id}:
+    get:
+      tags:
+        - 角色管理
+      summary: 获取单个角色信息
+      operationId: findRoleById
+      parameters:
+        - $ref: '#/parameters/id-p'
+      responses:
+        200:
+          description:  OK
+          schema:
+            type: object
+            allOf:
+            - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                $ref: '#/definitions/Role'
+    put:
+      tags:
+        - 角色管理
+      summary: '修改角色信息'
+      operationId: updateRole
+      parameters:
+        - $ref: '#/parameters/id-p'
+        - name: role
+          in: body
+          description: typeName可不传输
+          required: true
+          schema:
+            $ref: '#/definitions/Role'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+    delete:
+      tags:
+        - 角色管理
+      summary: '删除角色'
+      operationId: deleteRole
+      parameters:
+        - $ref: '#/parameters/id-p'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+  /roles/search:
+    post:
+      tags:
+        - 角色管理
+      summary: '根据条件查询角色列表-分页'
+      operationId: findRoles
+      parameters:
+        - name: roleVO
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              roleName:
+                type: string
+              page:
+                type: integer
+              size:
+                type: integer
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/RoleList'
+  /roles/searchAll:
+      post:
+        tags:
+          - 角色管理
+        summary: '根据条件查询角色列表-不分页'
+        operationId: findRolesAll
+        parameters:
+          - name: roleVO
+            in: body
+            required: true
+            schema:
+              type: object
+              properties:
+                roleName:
+                  type: string
+        responses:
+          200:
+            description: OK
+            schema:
+              type: object
+              allOf:
+                - $ref: '#/definitions/ReturnResult'
+              properties:
+                data:
+                  type: array
+                  items:
+                    $ref: '#/definitions/Role'
+  /roles/checkRoleCode:
+    post:
+      tags:
+        - 角色管理
+      summary: 检查角色编码是否唯一
+      operationId: checkRoleCode
+      parameters:
+        - name: roleCode
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              roleCode:
+                type: string
+      responses:
+        200:
+          description:  OK
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                type: boolean
+  /roleInfo/menu:
+    get:
+      tags:
+        - 角色服务
+      summary: 获取角色赋权信息
+      operationId: findRoleMenus
+      parameters:
+        - name: roleId
+          in: query
+          type: string
+          required: true
+      responses:
+        200:
+          description:  OK
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                type: array
+                items:
+                  type: string
+    post:
+      tags:
+        - 角色服务
+      summary: 保存角色赋权信息
+      operationId: saveRoleMenus
+      parameters:
+         - name: roleMenu
+           in: body
+           required: true
+           schema:
+            type: object
+            properties:
+              roleId:
+                type: string
+              menuIds:
+                type: array
+                items:
+                  type: string
+      responses:
+        200:
+          description:  OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+  /roleType/menu:
+    get:
+      tags:
+        - 角色类型服务
+      summary: 获取角色类型赋权信息
+      operationId: findRoleTypeMenus
+      parameters:
+        - name: roleType
+          in: query
+          type: string
+          required: true
+      responses:
+        200:
+          description:  OK
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                type: array
+                items:
+                  type: string
+    post:
+      tags:
+        - 角色类型服务
+      summary: 保存角色类型赋权信息
+      operationId: saveRoleTypeMenus
+      parameters:
+         - name: roleTypeMenu
+           in: body
+           required: true
+           schema:
+            type: object
+            properties:
+              roleType:
+                type: string
+              menuIds:
+                type: array
+                items:
+                  type: string
+      responses:
+        200:
+          description:  OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+#### menus ####
+  /menus:
+    get:
+      tags:
+        - 菜单管理
+      summary: 获取菜单列表
+      operationId: findMenuList
+      parameters:
+        - name: parentId
+          in: query
+          description: 父节点编码
+          type: string
+        - name: roleType
+          in: query
+          description: 角色类型编码
+          type: string
+      responses:
+        200:
+          description:  OK
+          schema:
+            $ref: '#/definitions/MenuList'
+    post:
+      tags:
+        - 菜单管理
+      summary: '新增菜单'
+      operationId: addMenu
+      parameters:
+        - name: menu
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Menu'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+  /menus/{id}:
+    get:
+      tags:
+        - 菜单管理
+      summary: 获取单个菜单信息
+      operationId: findMenuById
+      parameters:
+        - $ref: '#/parameters/id-p'
+      responses:
+        200:
+          description:  OK
+          schema:
+            type: object
+            allOf:
+            - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                $ref: '#/definitions/Menu'
+    put:
+      tags:
+        - 菜单管理
+      summary: '修改菜单信息'
+      operationId: updateMenu
+      parameters:
+        - $ref: '#/parameters/id-p'
+        - name: menu
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Menu'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+    delete:
+      tags:
+        - 菜单管理
+      summary: '删除菜单'
+      description: 删除菜单需要更新子节点的删除标识
+      operationId: deleteMenu
+      parameters:
+        - $ref: '#/parameters/id-p'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+  /menuInfo/currentMenu:
+    get:
+      tags:
+        - 菜单服务
+      summary: 获取当前用户菜单权限
+      operationId: findCurrentMenuList
+      responses:
+        200:
+          description:  OK
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    path:
+                      type: string
+                    component:
+                      type: string
+                    redirect:
+                      type: string
+                    name:
+                      type: string
+                    hidden:
+                      type: boolean
+                    alwaysShow:
+                      type: boolean
+                    meta:
+                      type: object
+                      properties:
+                        title:
+                          type: string
+                        icon:
+                          type: string
+                    children:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          path:
+                            type: string
+                          component:
+                            type: string
+                          redirect:
+                            type: string
+                          name:
+                            type: string
+                          hidden:
+                            type: boolean
+                          alwaysShow:
+                            type: boolean
+                          meta:
+                            type: object
+                            properties:
+                              title:
+                                type: string
+                              icon:
+                                type: string
+  /menuInfo/currentButton:
+    get:
+      tags:
+        - 菜单服务
+      summary: 获取当前用户按钮权限
+      operationId: findCurrentButtonList
+      responses:
+        200:
+          description:  OK
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                type: array
+                items:
+                  type: string
+#### org ####
+  /orgs:
+    get:
+      tags:
+        - 机构管理
+      summary: 获取机构列表
+      operationId: findOrgList
+      parameters:
+        - name: parentId
+          in: query
+          description: 父节点编码
+          type: string
+        - name: orgName
+          in: query
+          description: 机构名称
+          type: string
+      responses:
+        200:
+          description:  OK
+          schema:
+            $ref: '#/definitions/OrgList'
+    post:
+      tags:
+        - 机构管理
+      summary: '新增机构'
+      operationId: addOrg
+      parameters:
+        - name: org
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Org'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+  /orgs/{id}:
+    get:
+      tags:
+        - 机构管理
+      summary: 获取单个机构信息
+      operationId: findOrgById
+      parameters:
+        - $ref: '#/parameters/id-p'
+      responses:
+        200:
+          description:  OK
+          schema:
+            type: object
+            allOf:
+            - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                $ref: '#/definitions/Org'
+    put:
+      tags:
+        - 机构管理
+      summary: '修改机构信息'
+      operationId: updateOrg
+      parameters:
+        - $ref: '#/parameters/id-p'
+        - name: org
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Org'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+    delete:
+      tags:
+        - 机构管理
+      summary: '删除菜单'
+      description: 删除机构需要更新子节点的删除标识
+      operationId: deleteOrg
+      parameters:
+        - $ref: '#/parameters/id-p'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+
+#### dic ####
+  /dic/groups:
+    post:
+      tags:
+        - 字典管理
+      summary: '新增字典'
+      operationId: addGroup
+      parameters:
+        - name: dicGroup
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/DicGroup'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+  /dic/groups/{id}:
+    get:
+      tags:
+        - 字典管理
+      summary: 获取单个字典信息
+      operationId: findGroupById
+      parameters:
+        - $ref: '#/parameters/id-p'
+      responses:
+        200:
+          description:  OK
+          schema:
+            type: object
+            allOf:
+            - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                $ref: '#/definitions/DicGroup'
+    put:
+      tags:
+        - 字典管理
+      summary: '修改字典信息'
+      operationId: updateGroup
+      parameters:
+        - $ref: '#/parameters/id-p'
+        - name: dicGroup
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/DicGroup'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+    delete:
+      tags:
+        - 字典管理
+      summary: '删除字典'
+      operationId: deleteGroup
+      parameters:
+        - $ref: '#/parameters/id-p'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+  /dic/groups/search:
+    post:
+      tags:
+        - 字典管理
+      summary: '获取字典列表-分页'
+      operationId: findGroups
+      parameters:
+        - name: groupVO
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              dicName:
+                type: string
+                description: 字典名称
+              status:
+                type: string
+                description: 启/禁用标识
+              page:
+                type: integer
+              size:
+                type: integer
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/DicGroupList'
+  /dic/groups/searchAll:
+    post:
+      tags:
+        - 字典管理
+      summary: '获取字典列表-不分页'
+      operationId: findGroupsAll
+      parameters:
+        - name: groupVO
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              dicName:
+                type: string
+              status:
+                type: string
+                description: 启/禁用标识
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/DicGroup'
+  /dic/groups/checkCode:
+    post:
+      tags:
+        - 字典管理
+      summary: 检查字典标识是否唯一
+      operationId: checkCode
+      parameters:
+        - name: dicCode
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              dicCode:
+                type: string
+      responses:
+        200:
+          description:  OK
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                type: boolean
+  /dic/items:
+    get:
+      tags:
+        - 字典管理
+      summary: 获取字典项列表
+      operationId: findItemsList
+      parameters:
+        - name: dicCode
+          in: query
+          description: 字典编码
+          type: string
+      responses:
+        200:
+          description:  OK
+          schema:
+            $ref: '#/definitions/DicGroupItemsList'
+    post:
+      tags:
+        - 字典管理
+      summary: '新增菜单项'
+      operationId: addItem
+      parameters:
+        - name: menu
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/DicGroupItems'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+  /dic/items/{id}:
+    get:
+      tags:
+        - 字典管理
+      summary: 获取单个菜单项信息
+      operationId: findItemById
+      parameters:
+        - $ref: '#/parameters/id-p'
+      responses:
+        200:
+          description:  OK
+          schema:
+            type: object
+            allOf:
+            - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                $ref: '#/definitions/DicGroupItems'
+    put:
+      tags:
+        - 字典管理
+      summary: '修改字典项信息'
+      operationId: updateItem
+      parameters:
+        - $ref: '#/parameters/id-p'
+        - name: menu
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/DicGroupItems'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+    delete:
+      tags:
+        - 字典管理
+      summary: '删除字典项'
+      operationId: deleteItem
+      parameters:
+        - $ref: '#/parameters/id-p'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+  /dic/options:
+    get:
+      tags:
+        - 字典管理
+      summary: 根据dicCode获取字典项信息
+      operationId: findOptionList
+      parameters:
+        - name: dicCode
+          in: query
+          description: 字典编码
+          type: string
+      responses:
+        200:
+          description:  OK
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    key:
+                      type: string
+                    value:
+                      type: string
+  /dic/tree:
+    get:
+      tags:
+        - 字典管理
+      summary: 根据dicCode获取属性字典项
+      operationId: findOptionTree
+      parameters:
+        - name: dicCode
+          in: query
+          description: 字典编码
+          type: string
+      responses:
+        200:
+          description:  OK
+          schema:
+            $ref: '#/definitions/DicGroupItemsList'
+#### logs ####
+  /blogs/{id}:
+    get:
+      tags:
+        - 业务日志
+      summary: 获取单个业务日志信息
+      operationId: findBlogById
+      parameters:
+        - $ref: '#/parameters/id-p'
+      responses:
+        200:
+          description:  OK
+          schema:
+            type: object
+            allOf:
+            - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                $ref: '#/definitions/BusinessLog'
+  /blogs/search:
+    post:
+      tags:
+        - 业务日志
+      summary: '根据条件查询业务日志列表'
+      operationId: findBlogs
+      parameters:
+        - name: logVO
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              createTimeStart:
+                type: string
+                format: dateTime
+              createTimeEnd:
+                type: string
+                format: dateTime
+              page:
+                type: integer
+              size:
+                type: integer
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/BlogList'
+################ definitions#################
+definitions:
+#### user ####
+  UserList:
+    type: object
+    allOf:
+      - $ref: '#/definitions/ReturnResult'
+    properties:
+      data:
+        type: object
+        properties:
+          totalElements:
+            type: integer
+            description: 记录总数
+          totalPages:
+            type: integer
+            description: 总页数
+          first:
+            type: boolean
+            description: 是否第一页
+          last:
+            type: boolean
+            description: 是否最后一页
+          number:
+            type: integer
+            description: 当前页数，页码从0开始
+          size:
+            type: integer
+            description: 每页记录数
+          sort:
+            type: string
+          numberOfElements:
+            type: integer
+            description: 返回记录条数
+          content:
+            type: array
+            items:
+              $ref: '#/definitions/User'
+  User:
+    type: object
+    properties:
+      id:
+        type: string
+      account:
+        type: string
+      status:
+        type: string
+        description: 禁用标识，1:启用，0：禁用
+      createTime:
+        type: string
+        format: dateTime
+      homePage:
+        type: string
+      profile:
+        $ref: '#/definitions/Profile'
+  Profile:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      avatar:
+        type: string
+      email:
+        type: string
+      mobile:
+        type: string
+      sex:
+        type: string
+        description: 0:女，1：男
+        enum:
+          - 0
+          - 1
+      position:
+        type: string
+      roleName:
+        type: string
+      orgId:
+        type: string
+      orgName:
+        type: string
+      orgCode:
+        type: string
+#### role  ####
+  RoleList:
+    type: object
+    allOf:
+      - $ref: '#/definitions/ReturnResult'
+    properties:
+      data:
+        type: object
+        properties:
+          totalElements:
+            type: integer
+            description: 记录总数
+          totalPages:
+            type: integer
+            description: 总页数
+          first:
+            type: boolean
+            description: 是否第一页
+          last:
+            type: boolean
+            description: 是否最后一页
+          number:
+            type: integer
+            description: 当前页数，页码从0开始
+          size:
+            type: integer
+            description: 每页记录数
+          sort:
+            type: string
+          numberOfElements:
+            type: integer
+            description: 返回记录条数
+          content:
+            type: array
+            items:
+              $ref: '#/definitions/Role'
+  Role:
+    type: object
+    properties:
+      id:
+        type: string
+      roleName:
+        type: string
+      roleCode:
+        type: string
+        description: 大写字母命名，安全组件security使用
+      roleType:
+        type: string
+      createTime:
+        type: string
+        format: dateTime
+      typeName:
+        type: string
+      homePage:
+        type: string
+      decription:
+        type: string
+      status:
+        type: string
+        description: 禁用标识，1:启用，0：禁用
+
+#### menu ####
+  MenuList:
+    type: object
+    allOf:
+      - $ref: '#/definitions/ReturnResult'
+    properties:
+      data:
+        type: object
+        allOf:
+          - $ref: '#/definitions/Menu'
+        properties:
+          children:
+            type: array
+            items:
+              $ref: '#/definitions/Menu'
+  Menu:
+    type: object
+    properties:
+      id:
+        type: string
+      menuName:
+        type: string
+      permission:
+        type: string
+      parentId:
+        type: string
+      path:
+        type: string
+      routerName:
+        type: string
+      redirect:
+        type: string
+      icon:
+        type: string
+      component:
+        type: string
+      orders:
+        type: integer
+      type:
+        type: string
+      hidden:
+        type: boolean
+        default: false
+      alwaysShow:
+        type: boolean
+        default: false
+      createTime:
+        type: string
+        format: dateTime
+
+#### org ####
+  OrgList:
+    type: object
+    allOf:
+      - $ref: '#/definitions/ReturnResult'
+    properties:
+      data:
+        type: object
+        allOf:
+          - $ref: '#/definitions/Org'
+        properties:
+          children:
+            type: array
+            items:
+              $ref: '#/definitions/Org'
+  Org:
+    type: object
+    properties:
+      id:
+        type: string
+      orgName:
+        type: string
+      parentId:
+        type: string
+      orgCode:
+        type: string
+      address:
+        type: string
+      orders:
+        type: integer
+      description:
+        type: string
+      shortName:
+        type: string
+      createTime:
+        type: string
+        format: dateTime
+     orgLevelId:
+        type: string
+        description: 组织机构级别ID（新增属性）
+
+#### dic ####
+  DicGroupList:
+    type: object
+    allOf:
+      - $ref: '#/definitions/ReturnResult'
+    properties:
+      data:
+        type: object
+        properties:
+          totalElements:
+            type: integer
+            description: 记录总数
+          totalPages:
+            type: integer
+            description: 总页数
+          first:
+            type: boolean
+            description: 是否第一页
+          last:
+            type: boolean
+            description: 是否最后一页
+          number:
+            type: integer
+            description: 当前页数，页码从0开始
+          size:
+            type: integer
+            description: 每页记录数
+          sort:
+            type: string
+          numberOfElements:
+            type: integer
+            description: 返回记录条数
+          content:
+            type: array
+            items:
+              $ref: '#/definitions/DicGroup'
+  DicGroup:
+    type: object
+    properties:
+      id:
+        type: string
+      dicName:
+        type: string
+      dicCode:
+        type: string
+      type:
+        type: string
+        description: 0：列表，1：树型
+      orders:
+        type: integer
+      status:
+        type: string
+        description: 禁用标识，0：禁用，1：启用
+        enum:
+          - 0
+          - 1
+      createTime:
+        type: string
+        format: dateTime
+  DicGroupItemsList:
+    type: object
+    allOf:
+      - $ref: '#/definitions/ReturnResult'
+    properties:
+      data:
+        type: object
+        allOf:
+          - $ref: '#/definitions/DicGroupItems'
+        properties:
+          children:
+            type: array
+            items:
+              $ref: '#/definitions/DicGroupItems'
+  DicGroupItems:
+    type: object
+    properties:
+      id:
+        type: string
+      dicCode:
+        type: string
+      itemName:
+        type: string
+      parentId:
+        type: string
+      type:
+        type: string
+        description: 0：列表，1：树型
+      orders:
+        type: integer
+      itemCode:
+        type: string
+      createTime:
+        type: string
+        format: dateTime
+
+#### log #####
+  BlogList:
+    type: object
+    allOf:
+      - $ref: '#/definitions/ReturnResult'
+    properties:
+      data:
+        type: object
+        properties:
+          totalElements:
+            type: integer
+            description: 记录总数
+          totalPages:
+            type: integer
+            description: 总页数
+          first:
+            type: boolean
+            description: 是否第一页
+          last:
+            type: boolean
+            description: 是否最后一页
+          number:
+            type: integer
+            description: 当前页数，页码从0开始
+          size:
+            type: integer
+            description: 每页记录数
+          sort:
+            type: string
+          numberOfElements:
+            type: integer
+            description: 返回记录条数
+          content:
+            type: array
+            items:
+              $ref: '#/definitions/BusinessLog'
+  BusinessLog:
+    type: object
+    properties:
+      id:
+        type: string
+      type:
+        type: string
+        description: 日志类型，比如：新增、编辑、删除等，保存类型编码
+      typeName:
+        type: string
+      operateBy:
+        type: string
+      operator:
+        type: string
+      content:
+        type: string
+      createTime:
+        type: string
+        format: dateTime
+
+##### common model####
+  ReturnResult:
+    type: object
+    properties:
+      code:
+        type: integer
+        description: >-
+          2000  操作成功
+          4000 操作失败
+          4001 验证码出错
+          4002 用户名或密码错误
+          5000 后台逻辑错误
+          5001 令牌失效或过期
+          5009 未知错误
+      msg:
+        type: string
+
+############################ parameters#####################
+parameters:
+  id-p:
+    name: id
+    in: path
+    required: true
+    description: 主键ID
+    type: string

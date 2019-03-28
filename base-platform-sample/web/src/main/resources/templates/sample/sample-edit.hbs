@@ -1,0 +1,117 @@
+<title>sample</title>
+
+<div class="page-header"></div>
+
+<div class="row">
+    <div class="col-xs-12">
+        <!-- PAGE CONTENT BEGINS -->
+        <form class="form-horizontal" id="sampleForm" role="form" method="post">
+            <!-- #section:elements.form -->
+            <div class="hidden">
+                <input type="text" id="form-field-id" name="id" value="{{model.id}}"/>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-10">
+                    <div class="form-group">
+                        <label class="col-sm-6 control-label"
+                               for="form-field-name">标题：<span class="required">*</span></label>
+
+                        <div class="col-sm-6 ">
+                            <input type="text" id="form-field-title" name="title" placeholder="姓名"
+                                   class="form-control" value="{{model.title}}"/>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-6 control-label">内容：<span class="required">*</span></label>
+
+                        <div class="col-sm-6 ">
+                            <input type="text" id="form-field-content" name="content" placeholder="登录名"
+                                   class="form-control" value="{{model.content}}"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="clearfix form-actions">
+                <div class="center">
+                    <button class="btn btn-success" type="submit" id="sampleSubmitBtn">
+                        <i class="ace-icon fa fa-check bigger-110"></i>
+                        提交
+                    </button>
+                    &nbsp; &nbsp; &nbsp;
+                    <button class="btn btn-warning" type="reset" id="sampleResetBtn">
+                        <i class="ace-icon fa fa-undo bigger-110"></i>
+                        重置
+                    </button>
+                    &nbsp; &nbsp; &nbsp;
+                </div>
+            </div>
+            <!-- #section:elements.form -->
+        </form>
+        <!-- PAGE CONTENT ENDS -->
+    </div>
+    <!-- /.col -->
+</div>
+<!-- /.row -->
+
+<!-- inline scripts related to this page -->
+<script type="text/javascript">
+    var scripts = [null, null];
+    $('.page-content').ace_ajax('loadScripts', scripts, function () {
+        var listUrl = '#page/sample/sample-list.action';
+        var appPath   = App.getAppPath();
+
+        var $sampleForm = $('#sampleForm');
+
+        backPrevPage('fa-bullhorn', '样例编辑');
+        $sampleForm.tjForm({
+            form    : {
+                url:appPath+'/sample/sample-edit-save.action',
+                success: function (response) {
+                    if (response.result) {
+                        G.alert({
+                            title   : '提示',
+                            message : '操作成功！',
+                            callback: function () {
+                                G.loadPageContent(listUrl);
+                            }
+                        });
+                    }
+                    else {
+                        G.alert({
+                            message: '保存失败！'
+                        });
+                    }
+                }
+            },
+            validate: {
+                focusInvalid: false,
+                rules       : {
+                    title  : {
+                        required : true,
+                        maxlength: 25
+                    },
+                    content : {
+                        required : true,
+                        maxlength: 500
+                    }
+                },
+                messages    : {
+                    title: {
+                        required: "标题必须填写"
+                    },
+                    content    : {
+                        required: "内容必须填写"
+                    }
+                }
+            }
+        });
+
+
+        $('#sampleResetBtn').click(function () {
+            $sampleForm.tjForm('resetForm');
+        });
+    });
+</script>

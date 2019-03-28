@@ -1,0 +1,31 @@
+1.
+
+postman
+
+post http://127.0.0.1:9004/oauth/token
+
+authorization basic auth username eagleeye password thisissecret
+body                     grant_type password scope webclient username john.carnell password password1
+
+{
+    "access_token": "f18a982f-3c19-4540-996f-55d1a14e35a7",
+    "token_type": "bearer",
+    "refresh_token": "5ae48b74-16e3-4634-b36a-8a6267eaeb3e",
+    "expires_in": 42264,
+    "scope": "webclient"
+}
+
+
+/oauth/token get post
+/oauth/authorize  post user_oauth_approval
+/oauth/check_token
+/oauth/confirm_access
+/oauth/error
+
+'Authorization': 'Basic Y2xpZW50SWQ6c2VjcmV0' clientId:secret
+
+security.oauth2.client.clientId=clientId
+security.oauth2.client.clientSecret=secret
+security.oauth2.client.accessTokenUri=http://localhost:9004/oauth/token
+security.oauth2.client.userAuthorizationUri=http://localhost:9004/oauth/authorize
+security.oauth2.resource.userInfoUri=http://localhost:9004/user/me

@@ -1,0 +1,668 @@
+swagger: '2.0'
+info:
+  description: >-
+    短信管理（沿用）、短信模板管理、附件中间表、案例管理等.
+  version: 1.0.0
+  title: base基础支撑服务
+host: 127.0.0.1:8000
+basePath: /cdp-base/v1
+tags:
+  - name: 短信管理sms
+    description: 短信信息管理
+  - name: 短信模板管理smstemp
+    description: 短信模板管理
+  - name: 附件中间表管理midfile
+    description: 附件中间表管理
+  - name: 案例管理case
+    description: 案例管理
+schemes:
+  - http
+paths:
+####短信管理(沿用)####
+ /smses:
+    post:
+      tags:
+        - 短信管理sms
+      summary: '新增短信'
+      operationId: addSms
+      parameters:
+        - name: sms
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Sms'
+      responses:
+        200:
+          description: ok
+          schema:
+            type: object
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                 type: string
+                 description: 短信ID
+ /smses/{id}:
+    put:
+      tags:
+          - 短信管理sms
+      summary: '修改短信'
+      operationId: updateSms
+      parameters:
+        - $ref: '#/parameters/id-p'
+        - name: sms
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Sms'
+      responses:
+        200:
+          description: ok
+          schema:
+            $ref: '#/definitions/ReturnResult'
+    get:
+      tags:
+         - 短信管理sms
+      summary: '获取单条短信信息'
+      operationId: findsmsById
+      parameters:
+        - $ref: '#/parameters/id-p'
+      responses:
+        200:
+          description: ok
+          schema:
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                $ref: '#/definitions/Sms'
+    delete:
+          tags:
+             - 短信管理sms
+          summary: '删除单条短信信息'
+          operationId: deleteSms
+          parameters:
+            - $ref: '#/parameters/id-p'
+          responses:
+            200:
+              description: ok
+              schema:
+                $ref: '#/definitions/ReturnResult'
+ /smses/search:
+    post:
+      tags:
+        - 短信管理sms
+      summary: '根据条件查询短信列表-分页'
+      operationId: findSmss
+      parameters:
+        - name: smssVo
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              content:
+                type: string
+                description: 短信内容
+              createBy:
+                type: string
+                description: 发送人，默认情况下显示当前用户
+              buildOrgId:
+                type: string
+              sendStatus:
+                type: string
+              sendStartTime:
+                type: string
+                format: date-time
+              sendEndTime:
+                type: string
+                format: date-time
+              page:
+                type: integer
+              size:
+                type: integer
+      responses:
+        200:
+          description: ok
+          schema:
+            $ref: '#/definitions/SmsList'
+ /smses/send:
+    post:
+      tags:
+        - 短信管理sms
+      summary: '短信发送，后台需要根据各个发送人的发送接收情况依次写短信接收表'
+      operationId: sendSms
+      parameters:
+        - name: sendSmsVo
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+             content:
+               type: string
+             smsId:
+               type: string
+             receiveTels:
+               type: array
+               items:
+                 type: string
+      responses:
+        200:
+          description: ok
+          schema:
+            $ref: '#/definitions/ReturnResult'
+ /smses/sendStatus/{smsId}:
+    get:
+      tags:
+        - 短信管理sms
+      summary: '查看短信发送状态'
+      operationId: viewSendStatus
+      parameters:
+        - name: smsId
+          in: path
+          required: true
+          type: string
+          description: 短信ID
+      responses:
+        200:
+          description: ok
+          schema:
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/SmsReceive'
+####短信模板管理###
+ /smstemps:
+    post:
+      tags:
+        - 短信模板管理smstemp
+      summary: '新增短信模板'
+      operationId: addSmsTemplate
+      parameters:
+        - name: smsTemplate
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/SmsTemplate'
+      responses:
+        200:
+          description: ok
+          schema:
+            $ref: '#/definitions/ReturnResult'
+ /smstemps/{id}:
+    put:
+      tags:
+          - 短信模板管理smstemp
+      summary: '修改短信模板'
+      operationId: updateSmsTemplate
+      parameters:
+        - $ref: '#/parameters/id-p'
+        - name: smsTemplate
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/SmsTemplate'
+      responses:
+        200:
+          description: ok
+          schema:
+            $ref: '#/definitions/ReturnResult'
+    get:
+      tags:
+         - 短信模板管理smstemp
+      summary: '获取单条短信模板信息'
+      operationId: findSmsTemplateById
+      parameters:
+        - $ref: '#/parameters/id-p'
+      responses:
+        200:
+          description: ok
+          schema:
+            allOf:
+              - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                $ref: '#/definitions/SmsTemplate'
+    delete:
+          tags:
+             - 短信模板管理smstemp
+          summary: '删除单条短信模板信息'
+          operationId: deleteSmsTemplate
+          parameters:
+            - $ref: '#/parameters/id-p'
+          responses:
+            200:
+              description: ok
+              schema:
+                $ref: '#/definitions/ReturnResult'
+ /smstemps/search:
+    post:
+      tags:
+        - 短信模板管理smstemp
+      summary: '根据条件查询短信模板列表-分页'
+      operationId: findSmsTemplates
+      parameters:
+        - name: smsTemplateVo
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+                description: 短信模板名称
+              content:
+                type: string
+                description: 短信模板内容
+              page:
+                type: integer
+              size:
+                type: integer
+      responses:
+        200:
+          description: ok
+          schema:
+            $ref: '#/definitions/SmsTemplateList'
+####附件中间表管理###
+ /midfiles/getDocs:
+   get:
+     tags:
+       - 附件中间表管理midfile
+     summary: '根据业务实体ID获取附件对象列表'
+     operationId: getDocs
+     parameters:
+       - name: entityId
+         in: query
+         description: 业务实体ID
+         type: string
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               type: array
+               items:
+                 $ref: '#/definitions/DocAttachment'
+####案例管理###
+ /cases/:
+   post:
+     tags:
+       - 案例管理case
+     summary: '案例归档'
+     operationId: addCase
+     parameters:
+       - name: case
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/CaseVo'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+ /cases/{id}:
+   put:
+     tags:
+       - 案例管理case
+     summary: '修改案例信息'
+     operationId: updateCase
+     parameters:
+       - $ref: '#/parameters/id-p'
+       - name: case
+         in: body
+         required: true
+         schema:
+           $ref: '#/definitions/CaseVo'
+     responses:
+       200:
+         description: ok
+         schema:
+            $ref: '#/definitions/ReturnResult'
+   get:
+     tags:
+       - 案例管理case
+     summary: '获取单条案例信息'
+     operationId: findCaseById
+     parameters:
+       - $ref: '#/parameters/id-p'
+     responses:
+       200:
+         description: ok
+         schema:
+           type: object
+           allOf:
+             - $ref: '#/definitions/ReturnResult'
+           properties:
+             data:
+               $ref: '#/definitions/Case'
+   delete:
+     tags:
+       - 案例管理case
+     summary: '删除案例信息'
+     operationId: deleteCase
+     parameters:
+       - $ref: '#/parameters/id-p'
+     responses:
+       200:
+         description: ok
+         schema:
+           $ref: '#/definitions/ReturnResult'
+ /cases/search:
+    post:
+        tags:
+          - 案例管理case
+        summary: '根据条件查询案例信息列表-分页'
+        operationId: findCases
+        parameters:
+          - name: caseVO
+            in: body
+            required: true
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: 案例标题
+                startTimeStart:
+                  type: string
+                  format: 'date-time'
+                  description: 开始首发时间
+                startTimeEnd:
+                  type: string
+                  format: 'date-time'
+                  description: 结束首发时间
+                caseTypeIds:
+                  type: array
+                  description: 案例类型ID数组
+                  items:
+                    type: string
+                page:
+                  type: integer
+                size:
+                  type: integer
+        responses:
+          200:
+            description: OK
+            schema:
+              $ref: '#/definitions/CaseList'
+################ definitions#################
+definitions:
+####Sms####
+ Sms:
+    type: object
+    properties:
+      id:
+        type: string
+        description: 列表显示
+      content:
+        type: string
+        description: 列表显示
+      createBy:
+        type: string
+        description: 列表显示，短信的发送人
+      sendStatus:
+        type: string
+        description: 列表显示
+      sendTime:
+        type: string
+        description: 列表显示
+      receivers:
+        type: array
+        items:
+          properties:
+            receiverName:
+              type: string
+              description: 接收人姓名
+            receiverTel:
+              type: string
+              description: 接收人电话
+ SmsList:
+    type: object
+    allOf:
+      - $ref: '#/definitions/ReturnResult'
+    properties:
+      data:
+        type: object
+        properties:
+          totalElements:
+            type: integer
+            description: 记录总数
+          totalPages:
+            type: integer
+            description: 总页数
+          first:
+            type: boolean
+            description: 是否第一页
+          last:
+            type: boolean
+            description: 是否最后一页
+          number:
+            type: integer
+            description: 当前页数，页码从0开始
+          size:
+            type: integer
+            description: 每页记录数
+          sort:
+            type: string
+          numberOfElements:
+            type: integer
+            description: 返回记录条数
+          content:
+            type: array
+            items:
+              $ref: '#/definitions/Sms'
+ SmsReceive:
+    type: object
+    properties:
+      id:
+        type: string
+      smsId:
+        type: string
+      sendStatus:
+        type: string
+        description: 短信发送状态，0未发送，1已发送，2发送失败
+      sendTime:
+        type: string
+        format: date-time
+        description: 发送时间
+      receiverName:
+        type: string
+        description: 接收人姓名，若用户之间输入电话号码，姓名也为电话号码
+      receiverTel:
+        type: string
+        description: 接收人电话
+      receiveTime:
+        type: string
+        format: date-time
+        description: 发送时间
+      receiveStatus:
+        type: string
+        description: 短信接收状态，0未接收，1已接收
+####SmsTemplate####
+ SmsTemplate:
+    type: object
+    properties:
+      id:
+        type: string
+        description: 列表显示
+      name:
+        type: string
+        description: 列表显示
+      code:
+        type: string
+        description: 列表显示
+      content:
+        type: string
+        description: 列表显示
+      notes:
+        type: string
+ SmsTemplateList:
+    type: object
+    allOf:
+      - $ref: '#/definitions/ReturnResult'
+    properties:
+      data:
+        type: object
+        properties:
+          totalElements:
+            type: integer
+            description: 记录总数
+          totalPages:
+            type: integer
+            description: 总页数
+          first:
+            type: boolean
+            description: 是否第一页
+          last:
+            type: boolean
+            description: 是否最后一页
+          number:
+            type: integer
+            description: 当前页数，页码从0开始
+          size:
+            type: integer
+            description: 每页记录数
+          sort:
+            type: string
+          numberOfElements:
+            type: integer
+            description: 返回记录条数
+          content:
+            type: array
+            items:
+              $ref: '#/definitions/SmsTemplate'
+####fileMid####
+ DocAttachment:
+    type: object
+    properties:
+      id:
+        type: string
+        description: 主键
+      fileName:
+        type: string
+        description: 文件名称
+      location:
+        type: string
+        description: 相对路径
+      fileType:
+        type: string
+        description: 文件类型
+####case####
+ Case:
+   type: object
+   properties:
+     id:
+       type: string
+     infoId:
+       type: string
+       description: 舆情信息ID
+     cdId:
+       type: string
+       description: 舆情调控单ID
+     title:
+       type: string
+       description: 列表显示
+     caseTypeIds:
+       type: string
+       description: 案例类型ID字符串，以逗号隔开
+     caseTypeNames:
+       type: string
+       description: 列表显示 案例类型名称字符串，以逗号隔开
+     startWebsite:
+       type: string
+       description: 列表显示 首发网站
+     startTime:
+       type: string
+       format: date-time
+       description: 列表显示  首发时间
+     notes:
+       type: string
+       description: 备注
+     createTime:
+       type: string
+       format: date-time
+       description: 列表显示  创建时间（归档时间）
+ CaseVo:
+   type: object
+   properties:
+     case:
+       $ref: '#/definitions/Case'
+     fileIds:
+       type: array
+       items:
+         type: string
+         description: 舆情相关附件ID数组，前端传入
+     fileDeleteIds:
+       type: array
+       items:
+         type: string
+         description: 删除的附件ID数组，前端传入
+ CaseList:
+   type: object
+   allOf:
+     - $ref: '#/definitions/ReturnResult'
+   properties:
+     data:
+       type: object
+       properties:
+         totalElements:
+           type: integer
+           description: 记录总数
+         totalPages:
+           type: integer
+           description: 总页数
+         first:
+           type: boolean
+           description: 是否第一页
+         last:
+           type: boolean
+           description: 是否最后一页
+         number:
+           type: integer
+           description: 当前页数，页码从0开始
+         size:
+           type: integer
+           description: 每页记录数
+         sort:
+           type: string
+         numberOfElements:
+           type: integer
+           description: 返回记录条数
+         content:
+           type: array
+           items:
+             $ref: '#/definitions/Case'
+##### common model####
+ ReturnResult:
+    type: object
+    properties:
+      code:
+        type: integer
+        description: >-
+          2000  操作成功
+          4000 操作失败
+          4001 验证码出错
+          4002 用户名或密码错误
+          5000 后台逻辑错误
+          5001 令牌失效或过期
+          5009 未知错误
+      msg:
+        type: string
+
+############################ parameters#####################
+parameters:
+  id-p:
+    name: id
+    in: path
+    required: true
+    description: 主键ID
+    type: string

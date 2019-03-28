@@ -1,0 +1,2 @@
+TaiJi MicroService ${application.title}
+${AnsiColor.BRIGHT_GREEN} :: ${spring.application.name} application build with Spring Boot${spring-boot.formatted-version} ::${AnsiColor.DEFAULT}

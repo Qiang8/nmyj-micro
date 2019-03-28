@@ -1,0 +1,394 @@
+swagger: '2.0'
+info:
+  description: >-
+    公共通讯录管理，包括通讯录查询、人员维护、分组维护.
+  version: 1.0.0
+  title: 通讯录管理
+host: 127.0.0.1:8000
+basePath: /contact/v1
+tags:
+- name: 人员维护
+  description: 通讯录人员维护
+- name: 分组维护
+  description: 个人分组信息维护
+schemes:
+- http
+paths:
+  /contact/members:
+    post:
+      tags:
+      - 人员维护
+      summary: '新增人员'
+      operationId: addMember
+      parameters:
+      - name: member
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/ContactMember'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+  /contact/members/{id}:
+    get:
+      tags:
+      - 人员维护
+      summary: 获取单个人员信息
+      operationId: findMemberById
+      parameters:
+      - $ref: '#/parameters/id-p'
+      responses:
+        200:
+          description:  OK
+          schema:
+            type: object
+            allOf:
+            - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                $ref: '#/definitions/ContactMember'
+    put:
+      tags:
+      - 人员维护
+      summary: '修改人员信息'
+      operationId: updateMember
+      parameters:
+      - $ref: '#/parameters/id-p'
+      - name: contactMember
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/ContactMember'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+    delete:
+      tags:
+      - 人员维护
+      summary: '删除人员'
+      operationId: deleteMember
+      parameters:
+      - $ref: '#/parameters/id-p'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+  /contact/members/search:
+    post:
+      tags:
+      - 人员维护
+      summary: '根据条件查询人员列表-分页'
+      operationId: findMembers
+      parameters:
+      - name: memberVO
+        description: content为查询条件（可综合查询姓名和电话），letter为姓首字母大写，groupId为分组主键
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            content:
+              type: string
+            letter:
+              type: string
+            groupId:
+              type: string
+            orgCode:
+              type: string
+            page:
+              type: integer
+            size:
+              type: integer
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ContactMemberList'
+  /contact/members/searchAll:
+    post:
+      tags:
+      - 人员维护
+      summary: '根据条件查询人员列表-不分页'
+      operationId: findMembersAll
+      parameters:
+      - name: memberVO
+        description: content为查询条件,可综合查询姓名、电话、部门名称
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            groupId:
+              type: string
+            content:
+              type: string
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            allOf:
+            - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/ContactMember'
+  /contact/groups:
+    post:
+      tags:
+      - 分组维护
+      summary: '新增分组'
+      operationId: addGroup
+      parameters:
+      - name: group
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/ContactGroup'
+      responses:
+        200:
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                $ref: '#/definitions/ContactGroup'
+  /contact/groups/{id}:
+    get:
+      tags:
+      - 分组维护
+      summary: 获取单个分组信息
+      operationId: findGroupById
+      parameters:
+      - $ref: '#/parameters/id-p'
+      responses:
+        200:
+          description:  OK
+          schema:
+            type: object
+            allOf:
+            - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                $ref: '#/definitions/ContactGroup'
+    put:
+      tags:
+      - 分组维护
+      summary: '修改分组信息'
+      operationId: updateGroup
+      parameters:
+      - $ref: '#/parameters/id-p'
+      - name: contactGroup
+        in: body
+        required: true
+        schema:
+          $ref: '#/definitions/ContactGroup'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+    delete:
+      tags:
+      - 分组维护
+      summary: '删除分组'
+      operationId: deleteGroup
+      parameters:
+      - $ref: '#/parameters/id-p'
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+  /contact/groups/searchAll:
+    post:
+      tags:
+      - 分组维护
+      summary: '获取分组列表'
+      operationId: findGroupsAll
+      description: 获取当前用户的个人分组列表
+      responses:
+        200:
+          description: OK
+          schema:
+            type: object
+            allOf:
+            - $ref: '#/definitions/ReturnResult'
+            properties:
+              data:
+                type: array
+                items:
+                  $ref: '#/definitions/ContactGroup'
+  /contact/groups/members:
+    post:
+      tags:
+      - 分组维护
+      summary: 保存分组人员信息
+      operationId: saveGroupMembers
+      parameters:
+      - name: groupMembers
+        in: body
+        required: true
+        description: memberIds记录分组人员id，数组。
+        schema:
+          type: object
+          properties:
+            groupId:
+              type: string
+            memberIds:
+              type: array
+              items:
+                type: string
+      responses:
+        200:
+          description:  OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+  /contact/groups/sort:
+    post:
+      tags:
+      - 分组维护
+      summary: 保存分组排序
+      operationId: saveGroupSort
+      parameters:
+      - name: groupSort
+        in: body
+        required: true
+        description: memberIds记录分组人员id，数组。
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/ContactGroup'
+      responses:
+        200:
+          description:  OK
+          schema:
+            $ref: '#/definitions/ReturnResult'
+################ definitions#################
+definitions:
+  #### contactMember ####
+  ContactMemberList:
+    type: object
+    allOf:
+    - $ref: '#/definitions/ReturnResult'
+    properties:
+      data:
+        type: object
+        properties:
+          totalElements:
+            type: integer
+            description: 记录总数
+          totalPages:
+            type: integer
+            description: 总页数
+          first:
+            type: boolean
+            description: 是否第一页
+          last:
+            type: boolean
+            description: 是否最后一页
+          number:
+            type: integer
+            description: 当前页数，页码从0开始
+          size:
+            type: integer
+            description: 每页记录数
+          sort:
+            type: string
+          numberOfElements:
+            type: integer
+            description: 返回记录条数
+          content:
+            type: array
+            items:
+              $ref: '#/definitions/ContactMember'
+  ContactMember:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      avatar:
+        type: string
+      orgId:
+        type: string
+      orgName:
+        type: string
+      orgCode:
+        type: string
+      dutyTypeId:
+        type: string
+      dutyTypeName:
+        type: string
+      titleId:
+        type: string
+      titleName:
+        type: string
+      sex:
+        type: string
+        description: 0:女，1：男
+        enum:
+        - 0
+        - 1
+      birthday:
+        type: string
+        format: 'date-time'
+      address:
+        type: string
+      mobile:
+        type: string
+      email:
+        type: string
+      telephone:
+        type: string
+      otherWay:
+        type: string
+      orders:
+        type: integer
+      fax:
+        type: string
+      notes:
+        type: string
+  ContactGroup:
+    type: object
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      orders:
+        type: integer
+      userId:
+        type: string
+  ##### common model####
+  ReturnResult:
+    type: object
+    properties:
+      code:
+        type: integer
+        description: >-
+          2000  操作成功
+          4000 操作失败
+          4001 验证码出错
+          4002 用户名或密码错误
+          5000 后台逻辑错误
+          5001 令牌失效或过期
+          5009 未知错误
+      msg:
+        type: string
+############################ parameters#####################
+parameters:
+  id-p:
+    name: id
+    in: path
+    required: true
+    description: 主键ID
+    type: string
